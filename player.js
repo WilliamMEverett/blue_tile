@@ -58,7 +58,7 @@ function _getDefaultPlayerObject () {
           return {success:false,message:"This row is already full."}
       }
       else if (this.patternRowContainsOtherColor(tileDescriptor.tiles[0].color, rowIndex)) {
-          return {success:false,message:"You may only place tiles in a row that contains tiles of the same color."}
+          return {success:false,message:"You cannot place tiles in a row that contains tiles of a different color."}
       }
       else if (this.wallRowContainsColor(tileDescriptor.tiles[0].color, rowIndex)) {
           return {success:false,message:"The wall tile in this row of that color has already been filled."}

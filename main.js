@@ -6,13 +6,17 @@ const Player = require('./player');
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 
-var tileArray = []
-var discardedTiles = []
-var factoryDisplays = []
-var centerDisplay = []
-var currentPlayer = null
-var selectedTile = null
-var numberOfDisplays = 5
+var gameState = new Object()
+gameState.tileArray = []
+gameState.discardedTiles = []
+gameState.factoryDisplays = []
+gameState.centerDisplay = []
+gameState.players = []
+gameState.currentPlayerIndex = -1
+gameState.selectedTile = null
+gameState.numberOfDisplays = 5
+
+const displayNumberLookup = {1:3,2:5,3:7,4:9}
 
 function createWindow () {
   // Create the browser window.
@@ -64,25 +68,29 @@ app.on('activate', () => {
 })
 
 function renderer_initialized(event, args) {
-  initializeBoard(2)
+  initializeBoard(1, gameState)
 
-  win.webContents.send('set_number_factory_displays',numberOfDisplays)
-  for (var i=0; i< factoryDisplays.length; i++) {
-    win.webContents.send('configure_tile_displays',{index:i,tiles:factoryDisplays[i]})
+  win.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
+  for (var i=0; i< gameState.factoryDisplays.length; i++) {
+    win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
   }
-  win.webContents.send('configure_tile_displays',{index:"center",tiles:centerDisplay})
-  win.webContents.send('configure_player', {index:0,player:currentPlayer})
+  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
 
-  configureMainMessage()
+  for (var i=0; i< gameState.players.length; i++) {
+    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+  }
+
+  configureMainMessage(gameState)
+  win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start")
 }
 
 function tile_slot_clicked(event, args) {
   var selectedArray = null
   if (args.display == "center") {
-    selectedArray = centerDisplay;
+    selectedArray = gameState.centerDisplay;
   }
-  else if (args.display < factoryDisplays.length) {
-    selectedArray = factoryDisplays[args.display]
+  else if (args.display < gameState.factoryDisplays.length) {
+    selectedArray = gameState.factoryDisplays[args.display]
   }
   if (selectedArray == null || args.slot < 0) {
     // win.webContents.send('log_message', "Error")
@@ -104,27 +112,27 @@ function tile_slot_clicked(event, args) {
 
       var selectedTiles = selectedArray.filter(currentElement => currentElement.color == color)
 
-      selectedTile = {tiles:selectedTiles,sourceArray:selectedArray}
-      configureMainMessage()
+      gameState.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray}
+      configureMainMessage(gameState)
   }
 }
 
 function pattern_row_clicked(event, args) {
     // win.webContents.send('log_message', "Selected pattern row " + args.row)
-    if (selectedTile == null || selectedTile.tiles.length == 0) {
+    if (gameState.selectedTile == null || gameState.selectedTile.tiles.length == 0) {
       return
     }
-    let result = currentPlayer.placeTilesInPatternRow(selectedTile, args.row, centerDisplay)
+    let result = gameState.players[gameState.currentPlayerIndex].placeTilesInPatternRow(gameState.selectedTile, args.row, gameState.centerDisplay)
     if (result.success) {
-      var color = selectedTile.tiles[0].color
-      var number = selectedTile.tiles.length
+      var color = gameState.selectedTile.tiles[0].color
+      var number = gameState.selectedTile.tiles.length
       var pluralSuffix = ""
       var pronoun = "it"
       if (number > 1) {
         pluralSuffix = "s"
         pronoun = "them"
       }
-      var logMessage = "Player " + currentPlayer.playerNumber + " took " + number +
+      var logMessage = "Player " + (gameState.currentPlayerIndex + 1) + " took " + number +
       " " + color + " tile" + pluralSuffix + " and placed " + pronoun + " in row " +
       (args.row + 1) + "."
       if (result.discard > 0) {
@@ -135,34 +143,35 @@ function pattern_row_clicked(event, args) {
       }
       win.webContents.send('log_message', logMessage)
 
-      selectedTile = null
-      sortTileArray(centerDisplay)
-      for (var i=0; i< factoryDisplays.length; i++) {
-        win.webContents.send('configure_tile_displays',{index:i,tiles:factoryDisplays[i]})
+      gameState.selectedTile = null
+      sortTileArray(gameState.centerDisplay)
+      for (var i=0; i< gameState.factoryDisplays.length; i++) {
+        win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
       }
-      win.webContents.send('configure_tile_displays',{index:"center",tiles:centerDisplay})
-      win.webContents.send('configure_player', {index:0,player:currentPlayer})
-      configureMainMessage()
+      win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+      win.webContents.send('configure_player', {index:0,player:gameState.players[gameState.currentPlayerIndex]})
+      configureMainMessage(gameState)
     }
     else {
       win.webContents.send('temporary_message',{message:result.message,color:'red'})
     }
 }
 
-function configureMainMessage() {
-  if (selectedTile == null) {
+function configureMainMessage(gameState) {
+  if (gameState.selectedTile == null) {
     win.webContents.send('main_message', "Select a tile from the displays on the top.")
   }
   else {
-    var message = "You have selected " + selectedTile.tiles.length + " " + selectedTile.tiles[0].color + " tiles "
-    if (selectedTile.sourceArray === centerDisplay) {
+    var message = "You have selected " + gameState.selectedTile.tiles.length +
+    " " + gameState.selectedTile.tiles[0].color + " tiles "
+    if (gameState.selectedTile.sourceArray === gameState.centerDisplay) {
       message += "from the center."
-      if (centerDisplay[0].first === true) {
+      if (gameState.centerDisplay.findIndex((e) => e.first === true) > -1) {
         message += " You will also take the player 1 tile."
       }
     }
     else {
-      var index = factoryDisplays.indexOf(selectedTile.sourceArray)
+      var index = gameState.factoryDisplays.indexOf(gameState.selectedTile.sourceArray)
       if (index >= 0) {
         message += "from display #" + (index + 1) + "."
       }
@@ -172,11 +181,12 @@ function configureMainMessage() {
   }
 }
 
-function initializeBoard(numberOfPlayers) {
-    discardedTiles.length = 0
-    tileArray.length = 0
-    factoryDisplays.length = 0
-    centerDisplay.length = 0
+function initializeBoard(numberOfPlayers, gameState) {
+    gameState.discardedTiles.length = 0
+    gameState.tileArray.length = 0
+    gameState.factoryDisplays.length = 0
+    gameState.centerDisplay.length = 0
+    gameState.players.length = 0
 
     var colors = ['blue','red','green','black','yellow']
     colors.forEach((c) => {
@@ -184,43 +194,47 @@ function initializeBoard(numberOfPlayers) {
         let newTile = new Object()
         newTile.color = c
         newTile.first = false
-        tileArray.push(newTile)
+        gameState.tileArray.push(newTile)
       }
     })
 
-    shuffleArray(tileArray)
-    numberOfDisplays = 5
-    assignTilesToDisplay()
-    currentPlayer = Player.getDefaultPlayerObject()
-    currentPlayer.playerNumber = 1
+    shuffleArray(gameState.tileArray)
+    gameState.numberOfDisplays = displayNumberLookup[''+numberOfPlayers]
+    assignTilesToDisplay(gameState)
+    for (var i =0; i< numberOfPlayers; i++) {
+      let newPlayer = Player.getDefaultPlayerObject()
+      newPlayer.playerNumber = i
+      gameState.players.push(newPlayer)
+    }
+    gameState.currentPlayerIndex = 0
 }
 
-function assignTilesToDisplay() {
-    factoryDisplays.length = 0
-    centerDisplay.length = 0
+function assignTilesToDisplay(gameState) {
+    gameState.factoryDisplays.length = 0
+    gameState.centerDisplay.length = 0
 
 
-    for (var i=0; i< numberOfDisplays; i++) {
+    for (var i=0; i< gameState.numberOfDisplays; i++) {
       var newDisplay = []
-      while (newDisplay.length < 4 && (tileArray.length > 0 || discardedTiles.length > 0)) {
-        if (tileArray.length == 0) {
-          while (discardedTiles.length > 0) {
-            tileArray.push(discardedTiles.pop())
+      while (newDisplay.length < 4 && (gameState.tileArray.length > 0 || gameState.discardedTiles.length > 0)) {
+        if (gameState.tileArray.length == 0) {
+          while (gameState.discardedTiles.length > 0) {
+            gameState.tileArray.push(gameState.discardedTiles.pop())
           }
-          shuffleArray(tileArray)
+          shuffleArray(gameState.tileArray)
         }
-        if (tileArray.length > 0) {
-          newDisplay.push(tileArray.pop())
+        if (gameState.tileArray.length > 0) {
+          newDisplay.push(gameState.tileArray.pop())
         }
       }
       sortTileArray(newDisplay)
 
-      factoryDisplays.push(newDisplay)
+      gameState.factoryDisplays.push(newDisplay)
     }
     let firstTile = new Object()
     firstTile.color = 'white'
     firstTile.first = true
-    centerDisplay.push(firstTile)
+    gameState.centerDisplay.push(firstTile)
 }
 
 function sortTileArray(tArray) {
