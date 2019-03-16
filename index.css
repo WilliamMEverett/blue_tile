@@ -1,0 +1,113 @@
+#factory_display_table {
+  height: 95px;
+  overflow: hidden;
+}
+
+.factory_display {
+  text-align: center;
+  outline: solid black 2px;
+}
+
+.factory_display_header {
+  text-align: center;
+  font-size: 12pt;
+  font-family: "serif";
+}
+
+.display_center {
+  text-align: center;
+  outline: solid red 2px;
+}
+
+.factory_display_slot {
+  text-align: center;
+  font-size: 20pt;
+  font-family: "serif";
+  outline: dashed black 1px;
+  overflow: hidden;
+}
+
+.mainMessage {
+  text-align: center;
+  font-size: 11pt;
+  font-family: "tahoma";
+  overflow: hidden;
+}
+
+.temporaryMessage {
+  text-align: center;
+  font-size: 9pt;
+  font-family: "tahoma";
+  overflow: hidden;
+}
+
+.player_pattern_slot {
+  text-align: center;
+  overflow: hidden;
+  height: 30px;
+  width: 30px;
+  outline: solid black 1px;
+}
+
+.player_wall_slot_border {
+  text-align: center;
+  overflow: hidden;
+  height: 30px;
+  width: 30px;
+  outline: solid black 1px;
+}
+
+.player_wall_slot {
+  text-align: center;
+  overflow: hidden;
+  height: 20px;
+  width: 20px;
+  outline: dotted black 1px;
+  margin: 5px;
+}
+
+.player_discard {
+  text-align: center;
+  overflow: hidden;
+  outline: solid red 1px;
+}
+
+.player_discard_penalty {
+  text-align: center;
+  font-size: 11pt;
+  font-family: "serif";
+}
+
+.player_discard_slot {
+  text-align: center;
+  overflow: hidden;
+  font-size: 20pt;
+  font-family: "serif";
+  height: 30px;
+  width: 30px;
+  outline: solid black 1px;
+}
+
+#player_wall_rows {
+  outline: solid blue 2px;
+}
+
+#player_score_panel {
+  text-align: left;
+  font-size: 15pt;
+  font-family: "tahoma";
+  overflow: hidden;
+  height: 30px;
+}
+
+#playerBoard {
+  outline: dotted blue 1px;
+}
+
+#mainPlayArea {
+  outline: solid blue 1px;
+}
+
+#logPanel {
+  outline: solid red 1px;
+}
