@@ -1,0 +1,2 @@
+#ignore electron files, these can be generated using npm
+node_modules
