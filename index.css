@@ -88,20 +88,37 @@
   outline: solid black 1px;
 }
 
-#player_wall_rows {
+.player_wall_rows {
   outline: solid blue 2px;
 }
 
-#player_score_panel {
-  text-align: left;
+.player_score_panel {
+  text-align: center;
+  font-size: 12pt;
+  font-family: "tahoma";
+  overflow: hidden;
+  height: 20px;
+  color: #000088;
+}
+
+.player_title_panel {
+  text-align: center;
   font-size: 15pt;
   font-family: "tahoma";
   overflow: hidden;
   height: 30px;
 }
 
-#playerBoard {
+.player_board {
   outline: dotted blue 1px;
+  height: 350px;
+  width: 380px;
+}
+
+#playerBoards {
+  overflow-x: scroll;
+  width: 1150px;
+  outline: solid black 1px;
 }
 
 #mainPlayArea {
@@ -110,4 +127,6 @@
 
 #logPanel {
   outline: solid red 1px;
+  overflow: auto;
+  height: 100px;
 }

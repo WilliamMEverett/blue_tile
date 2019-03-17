@@ -5,6 +5,7 @@ function init() {
   ipcRenderer.on('configure_tile_displays', configure_tile_displays)
   ipcRenderer.on('configure_player', configure_player)
   ipcRenderer.on('set_number_factory_displays', set_number_factory_displays)
+  ipcRenderer.on('set_number_players', set_number_players)
   ipcRenderer.on('log_message', log_message)
   ipcRenderer.on('main_message', main_message)
   ipcRenderer.on('temporary_message', temporary_message)
@@ -15,12 +16,14 @@ function init() {
       element.onclick = factory_slot_clicked
   })
 
-  var patternRowsTable = document.getElementById('player_pattern_rows')
-  let nl2 = patternRowsTable.querySelectorAll('.pattern_row')
+  let nl2 = document.querySelectorAll('.pattern_row')
   nl2.forEach( (element) => {
       element.onclick = pattern_row_clicked
   })
-
+  let nl3 = document.querySelectorAll('.player_discard')
+  nl3.forEach( (element) => {
+      element.onclick = pattern_row_clicked
+  })
 }
 
 function configure_tile_displays(event, arg) {
@@ -62,76 +65,92 @@ function configure_tile_displays(event, arg) {
 }
 
 function configure_player(event, arg) {
-  if (arg.index == 0) {
-    var playerScorePanel = document.getElementById('player_score_panel')
-    while (playerScorePanel.firstChild) {
-      playerScorePanel.removeChild(playerScorePanel.firstChild);
-    }
-    playerScorePanel.appendChild(document.createTextNode("" + arg.player.score + " points"))
-
-    var patternRows = document.getElementById('player_pattern_rows')
-    let rowsArray = Array.prototype.slice.call(patternRows.querySelectorAll('.pattern_row'))
-    for (var i=0; i < rowsArray.length; i++) {
-        var cellsArray = Array.prototype.slice.call(rowsArray[i].querySelectorAll('.player_pattern_slot'))
-        for (var j=0; j< cellsArray.length; j++) {
-          var color = 'white'
-          if (j < arg.player.patternRows[i].length ) {
-            color = arg.player.patternRows[i][j].color
-          }
-          cellsArray[cellsArray.length - j - 1].style.backgroundColor = color
-        }
-    }
-
-    var wallRows = document.getElementById('player_wall_rows')
-    let wallRowsArray = Array.prototype.slice.call(wallRows.querySelectorAll('.wall_row'))
-    for (var i=0; i < wallRowsArray.length; i++) {
-        var cellsArray = Array.prototype.slice.call(wallRowsArray[i].querySelectorAll('.player_wall_slot_border'))
-        for (var j=0; j < cellsArray.length; j++) {
-          var cellColor = arg.player.wallPattern[i][j]
-          cellsArray[j].style.backgroundColor = cellColor
-          var fillColor = 'white'
-          if (arg.player.wallTiles[i].find((element) => element.color == cellColor) != null) {
-            fillColor = cellColor
-          }
-          cellsArray[j].querySelector('.player_wall_slot').style.backgroundColor = fillColor
-        }
-    }
-
-    var overflowDisplay = document.getElementById('player_discard_line')
-    let overflowHeaders = Array.prototype.slice.call(overflowDisplay.querySelectorAll('.player_discard_penalty'))
-    overflowHeaders.forEach((e,i) => {
-      if (e.textContent.trim().length > 0) {
-        return
-      }
-      if (arg.player.discardPenalties.length > i) {
-          var text = document.createTextNode("" + arg.player.discardPenalties[i])
-          e.appendChild(text)
-      }
-    })
-
-    let discardSlots = Array.prototype.slice.call(overflowDisplay.querySelectorAll('.player_discard_slot'))
-    discardSlots.forEach((e,i) => {
-      while (e.firstChild) {
-        e.removeChild(e.firstChild);
-      }
-      if (arg.player.discardLine.length > i) {
-        e.style.backgroundColor = arg.player.discardLine[i].color
-
-        if (arg.player.discardLine[i].first) {
-            let firstTile = document.createTextNode('1')
-            e.appendChild(firstTile)
-        }
-      }
-      else {
-        e.style.backgroundColor = 'white'
-      }
-    })
+  let playerBoardsElement = document.getElementById('playerBoards')
+  let playerBoardNodes = playerBoardsElement.querySelectorAll('.player_board')
+  if (arg.index >= playerBoardNodes.length) {
+    return
   }
+  var playerScorePanel = playerBoardNodes.item(arg.index).querySelector('.player_score_panel')
+  while (playerScorePanel.firstChild) {
+    playerScorePanel.removeChild(playerScorePanel.firstChild);
+  }
+  playerScorePanel.appendChild(document.createTextNode("" + arg.player.score + " points"))
+
+  var patternRows = playerBoardNodes.item(arg.index).querySelector('.player_pattern_rows')
+  let rowsArray = Array.prototype.slice.call(patternRows.querySelectorAll('.pattern_row'))
+  for (var i=0; i < rowsArray.length; i++) {
+    var cellsArray = Array.prototype.slice.call(rowsArray[i].querySelectorAll('.player_pattern_slot'))
+    for (var j=0; j< cellsArray.length; j++) {
+      var color = 'white'
+      if (j < arg.player.patternRows[i].length ) {
+        color = arg.player.patternRows[i][j].color
+      }
+      cellsArray[cellsArray.length - j - 1].style.backgroundColor = color
+    }
+  }
+
+  var wallRows = playerBoardNodes.item(arg.index).querySelector('.player_wall_rows')
+  let wallRowsArray = Array.prototype.slice.call(wallRows.querySelectorAll('.wall_row'))
+  for (var i=0; i < wallRowsArray.length; i++) {
+    var cellsArray = Array.prototype.slice.call(wallRowsArray[i].querySelectorAll('.player_wall_slot_border'))
+    for (var j=0; j < cellsArray.length; j++) {
+      var cellColor = arg.player.wallPattern[i][j]
+      cellsArray[j].style.backgroundColor = cellColor
+      var fillColor = 'white'
+      if (arg.player.wallTiles[i].find((element) => element.color == cellColor) != null) {
+        fillColor = cellColor
+      }
+      cellsArray[j].querySelector('.player_wall_slot').style.backgroundColor = fillColor
+    }
+  }
+
+  var overflowDisplay = playerBoardNodes.item(arg.index).querySelector('.player_discard')
+  let overflowHeaders = Array.prototype.slice.call(overflowDisplay.querySelectorAll('.player_discard_penalty'))
+  overflowHeaders.forEach((e,i) => {
+    if (e.textContent.trim().length > 0) {
+      return
+    }
+    if (arg.player.discardPenalties.length > i) {
+      var text = document.createTextNode("" + arg.player.discardPenalties[i])
+      e.appendChild(text)
+    }
+  })
+
+  let discardSlots = Array.prototype.slice.call(overflowDisplay.querySelectorAll('.player_discard_slot'))
+  discardSlots.forEach((e,i) => {
+    while (e.firstChild) {
+      e.removeChild(e.firstChild);
+    }
+    if (arg.player.discardLine.length > i) {
+      e.style.backgroundColor = arg.player.discardLine[i].color
+
+      if (arg.player.discardLine[i].first) {
+        let firstTile = document.createTextNode('1')
+        e.appendChild(firstTile)
+      }
+    }
+    else {
+      e.style.backgroundColor = 'white'
+    }
+  })
+
 }
 
 function set_number_factory_displays(event, arg) {
   var factoryDisplayNodes = document.getElementById('factory_display_table').querySelectorAll('.factory_display');
   factoryDisplayNodes.forEach((e,i) => {
+    if (i < arg) {
+      e.hidden = false
+    }
+    else {
+      e.hidden = true
+    }
+  })
+}
+
+function set_number_players(event, arg) {
+  var playerNodes = document.getElementById('playerBoards').querySelectorAll('.player_board');
+  playerNodes.forEach((e,i) => {
     if (i < arg) {
       e.hidden = false
     }
@@ -210,18 +229,31 @@ function factory_slot_clicked(event) {
 }
 
 function pattern_row_clicked(event) {
-  var patternRowsTable = document.getElementById('player_pattern_rows')
-  let nl2 = patternRowsTable.querySelectorAll('.pattern_row')
-  let rowArray = Array.prototype.slice.call(nl2);
-  var rowIndex = -1;
-  for (var i=0; i < rowArray.length; i++) {
-    if (event.currentTarget == rowArray[i]) {
-      rowIndex = i
+  var playerBoardNodes = document.querySelectorAll('.player_board')
+  var playerIndex = -1;
+  for (var j=0; j < playerBoardNodes.length; j++) {
+    if (!playerBoardNodes.item(j).contains(event.currentTarget)) {
+      continue
+    }
+    playerIndex = j
+    if (event.currentTarget.className.match(/\bplayer_discard\b/i)) {
+      rowIndex = 5
       break
     }
+
+    let nl2 = playerBoardNodes.item(j).querySelectorAll('.pattern_row')
+    let rowArray = Array.prototype.slice.call(nl2);
+    var rowIndex = -1;
+    for (var i=0; i < rowArray.length; i++) {
+      if (event.currentTarget == rowArray[i]) {
+        rowIndex = i
+        break
+      }
+    }
+    break
   }
 
-  ipcRenderer.send('pattern_row_clicked', {row:rowIndex})
+  ipcRenderer.send('pattern_row_clicked', {row:rowIndex,player:playerIndex})
 }
 
 init();

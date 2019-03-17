@@ -120,12 +120,15 @@
             <tr><td><div id="mainMessagePanel" class="mainMessage" style="height: 35px;"></div></td></tr>
             <tr><td><div id="temporaryMessagePanel" class="temporaryMessage" style="height: 15px;"></div></td></tr>
           <tr><td>
-            <div id="playerBoard" style="height:400px;">
+            <div id="playerBoards">
+              <table><tr>
+            <td><div class="player_board">
               <table>
-                <tr><td><div id="player_score_panel"></div></td></tr>
+                <tr><td><div class="player_title_panel">Player 1</div></td></tr>
+                <tr><td><div class="player_score_panel"></div></td></tr>
                 <tr><td><div>
                   <table><tr>
-                    <td><div id="player_pattern_rows"><table>
+                    <td><div class="player_pattern_rows"><table>
                       <tr class="pattern_row">
                         <td></td>
                         <td></td>
@@ -162,7 +165,7 @@
                         <td><div class="player_pattern_slot"></div></td>
                       </tr>
                     </table></div></td>
-                    <td><div id="player_wall_rows"><table>
+                    <td><div class="player_wall_rows"><table>
                       <tr class="wall_row">
                         <td><div class="player_wall_slot_border"><div class="player_wall_slot">
                         </div></div></td>
@@ -226,7 +229,7 @@
                     </table></div></td>
                   </tr></table>
                 </div></td></tr>
-                <tr><td><div id="player_discard_line" class="player_discard">
+                <tr><td><div class="player_discard">
                   <table><tr><td><div class="player_discard_penalty"></div></td>
                       <td><div class="player_discard_penalty"></div></td>
                       <td><div class="player_discard_penalty"></div></td>
@@ -245,11 +248,393 @@
                     </table>
                 </div></td></tr>
               </table>
-            </div>
+            </div></td>
+            <td><div class="player_board" >
+              <table>
+                <tr><td><div class="player_title_panel">Player 2</div></td></tr>
+                <tr><td><div class="player_score_panel"></div></td></tr>
+                <tr><td><div>
+                  <table><tr>
+                    <td><div class="player_pattern_rows"><table>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                    </table></div></td>
+                    <td><div class="player_wall_rows"><table>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                    </table></div></td>
+                  </tr></table>
+                </div></td></tr>
+                <tr><td><div class="player_discard">
+                  <table><tr><td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td></tr>
+                      <tr><td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                      </tr>
+                    </table>
+                </div></td></tr>
+              </table>
+            </div></td>
+            <td><div class="player_board" >
+              <table>
+                <tr><td><div class="player_title_panel">Player 3</div></td></tr>
+                <tr><td><div class="player_score_panel"></div></td></tr>
+                <tr><td><div>
+                  <table><tr>
+                    <td><div class="player_pattern_rows"><table>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                    </table></div></td>
+                    <td><div class="player_wall_rows"><table>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                    </table></div></td>
+                  </tr></table>
+                </div></td></tr>
+                <tr><td><div class="player_discard">
+                  <table><tr><td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td></tr>
+                      <tr><td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                      </tr>
+                    </table>
+                </div></td></tr>
+              </table>
+            </div></td>
+            <td><div class="player_board">
+              <table>
+                <tr><td><div class="player_title_panel">Player 4</div></td></tr>
+                <tr><td><div class="player_score_panel"></div></td></tr>
+                <tr><td><div>
+                  <table><tr>
+                    <td><div class="player_pattern_rows"><table>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                      <tr class="pattern_row">
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                        <td><div class="player_pattern_slot"></div></td>
+                      </tr>
+                    </table></div></td>
+                    <td><div class="player_wall_rows"><table>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                      <tr class="wall_row">
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                        <td><div class="player_wall_slot_border"><div class="player_wall_slot">
+                        </div></div></td>
+                      </tr>
+                    </table></div></td>
+                  </tr></table>
+                </div></td></tr>
+                <tr><td><div class="player_discard">
+                  <table><tr><td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td>
+                      <td><div class="player_discard_penalty"></div></td></tr>
+                      <tr><td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                        <td><div class="player_discard_slot"></div></td>
+                      </tr>
+                    </table>
+                </div></td></tr>
+              </table>
+            </div></td>
+          </tr></table></div>
           </td><td></td></tr>
         </table>
       </div>
-      <div id="logPanel" style="overflow:auto; height:100px;">
+      <div id="logPanel" >
       </div>
         <script>
       // You can also require other files to run in this process

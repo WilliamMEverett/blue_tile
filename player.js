@@ -53,42 +53,45 @@ function _getDefaultPlayerObject () {
         }
     }
 
-    newPlayer.placeTilesInPatternRow = function(tileDescriptor, rowIndex, center) {
-      if (this.patternRows[rowIndex].length >= this.patternRowSize[rowIndex]) {
+    newPlayer.placeTilesInPatternRow = function(tileDescriptor, rowIndex, gameState) {
+      if (rowIndex < this.patternRows.length) {
+        if (this.patternRows[rowIndex].length >= this.patternRowSize[rowIndex]) {
           return {success:false,message:"This row is already full."}
-      }
-      else if (this.patternRowContainsOtherColor(tileDescriptor.tiles[0].color, rowIndex)) {
+        }
+        else if (this.patternRowContainsOtherColor(tileDescriptor.tiles[0].color, rowIndex)) {
           return {success:false,message:"You cannot place tiles in a row that contains tiles of a different color."}
-      }
-      else if (this.wallRowContainsColor(tileDescriptor.tiles[0].color, rowIndex)) {
+        }
+        else if (this.wallRowContainsColor(tileDescriptor.tiles[0].color, rowIndex)) {
           return {success:false,message:"The wall tile in this row of that color has already been filled."}
+        }
       }
 
       var tookFirstTile = false
       var colorOfTile = tileDescriptor.tiles[0].color
-      if (tileDescriptor.sourceArray == center) {
-        var firstIndex = center.findIndex((e) => e.first === true)
+      if (tileDescriptor.sourceArray == gameState.centerDisplay) {
+        var firstIndex = gameState.centerDisplay.findIndex((e) => e.first === true)
         if (firstIndex >= 0) {
           tookFirstTile = true
-          this.discardLine.push(center[firstIndex])
-          center.splice(firstIndex,1)
+          this.discardLine.push(gameState.centerDisplay[firstIndex])
+          gameState.centerDisplay.splice(firstIndex,1)
         }
         tileDescriptor.tiles.forEach((e) => {
-          var ind = center.indexOf(e)
+          var ind = gameState.centerDisplay.indexOf(e)
           if (ind >= 0) {
-            center.splice(ind,1)
+            gameState.centerDisplay.splice(ind,1)
           }
         })
       }
       else {
         var otherTiles = tileDescriptor.sourceArray.filter( (e) => e.color != colorOfTile)
         tileDescriptor.sourceArray.length = 0
-        otherTiles.forEach((e) => center.push(e))
+        otherTiles.forEach((e) => gameState.centerDisplay.push(e))
       }
 
       var discardLineTotal = 0
       tileDescriptor.tiles.forEach((e) => {
-        if (this.patternRows[rowIndex].length < this.patternRowSize[rowIndex]) {
+        if (rowIndex < this.patternRows.length &&
+           this.patternRows[rowIndex].length < this.patternRowSize[rowIndex]) {
           this.patternRows[rowIndex].push(e)
         }
         else {

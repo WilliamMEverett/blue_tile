@@ -68,9 +68,10 @@ app.on('activate', () => {
 })
 
 function renderer_initialized(event, args) {
-  initializeBoard(1, gameState)
+  initializeBoard(2, gameState)
 
   win.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
+  win.webContents.send('set_number_players',gameState.players.length)
   for (var i=0; i< gameState.factoryDisplays.length; i++) {
     win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
   }
@@ -106,7 +107,7 @@ function tile_slot_clicked(event, args) {
         selectedTile = null
         win.webContents.send('temporary_message', {message:"You cannot select the first player tile. " +
         "You will, however, take it if you take any other tile from the center.",color:"red"})
-        configureMainMessage()
+        configureMainMessage(gameState)
         return
       }
 
@@ -122,7 +123,18 @@ function pattern_row_clicked(event, args) {
     if (gameState.selectedTile == null || gameState.selectedTile.tiles.length == 0) {
       return
     }
-    let result = gameState.players[gameState.currentPlayerIndex].placeTilesInPatternRow(gameState.selectedTile, args.row, gameState.centerDisplay)
+    if (args.player != gameState.currentPlayerIndex) {
+      win.webContents.send('temporary_message',{message:
+        "That is not the current player. The current player is #" + (gameState.currentPlayerIndex + 1),
+        color:'red'})
+      return
+    }
+    placeSelectedTileInRow(gameState,args.row)
+}
+
+function placeSelectedTileInRow(gameState, row) {
+  let result = gameState.players[gameState.currentPlayerIndex].placeTilesInPatternRow(
+    gameState.selectedTile, row, gameState)
     if (result.success) {
       var color = gameState.selectedTile.tiles[0].color
       var number = gameState.selectedTile.tiles.length
@@ -133,8 +145,13 @@ function pattern_row_clicked(event, args) {
         pronoun = "them"
       }
       var logMessage = "Player " + (gameState.currentPlayerIndex + 1) + " took " + number +
-      " " + color + " tile" + pluralSuffix + " and placed " + pronoun + " in row " +
-      (args.row + 1) + "."
+      " " + color + " tile" + pluralSuffix
+      if (row < gameState.players[gameState.currentPlayerIndex].patternRows.length) {
+        logMessage += " and placed " + pronoun + " in row " + (row + 1) + "."
+      }
+      else {
+        logMessage += "."
+      }
       if (result.discard > 0) {
         logMessage += " " + result.discard + " of those went to the discard row."
       }
@@ -149,23 +166,31 @@ function pattern_row_clicked(event, args) {
         win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
       }
       win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
-      win.webContents.send('configure_player', {index:0,player:gameState.players[gameState.currentPlayerIndex]})
+      win.webContents.send('configure_player', {index:gameState.currentPlayerIndex,player:gameState.players[gameState.currentPlayerIndex]})
+      gameState.currentPlayerIndex += 1
+      if (gameState.currentPlayerIndex >= gameState.players.length) {
+        gameState.currentPlayerIndex = 0
+      }
+
       configureMainMessage(gameState)
     }
     else {
       win.webContents.send('temporary_message',{message:result.message,color:'red'})
     }
-}
+  }
 
 function configureMainMessage(gameState) {
   if (gameState.selectedTile == null) {
-    win.webContents.send('main_message', "Select a tile from the displays on the top.")
+    win.webContents.send('main_message',
+    `Player ${gameState.currentPlayerIndex + 1} select a tile from the displays on the top.`)
   }
   else {
-    var message = "You have selected " + gameState.selectedTile.tiles.length +
-    " " + gameState.selectedTile.tiles[0].color + " tiles "
+    var message = `Player ${gameState.currentPlayerIndex + 1} you have selected ${gameState.selectedTile.tiles.length} ${gameState.selectedTile.tiles[0].color} tile`
+    if (gameState.selectedTile.tiles.length > 1) {
+      message += "s"
+    }
     if (gameState.selectedTile.sourceArray === gameState.centerDisplay) {
-      message += "from the center."
+      message += " from the center."
       if (gameState.centerDisplay.findIndex((e) => e.first === true) > -1) {
         message += " You will also take the player 1 tile."
       }
@@ -173,7 +198,7 @@ function configureMainMessage(gameState) {
     else {
       var index = gameState.factoryDisplays.indexOf(gameState.selectedTile.sourceArray)
       if (index >= 0) {
-        message += "from display #" + (index + 1) + "."
+        message += ` from display #${(index + 1)}.`
       }
     }
     message += " Select a pattern row (or the discard line) to place the tiles."
