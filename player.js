@@ -56,13 +56,13 @@ function _getDefaultPlayerObject () {
     newPlayer.placeTilesInPatternRow = function(tileDescriptor, rowIndex, gameState) {
       if (rowIndex < this.patternRows.length) {
         if (this.patternRows[rowIndex].length >= this.patternRowSize[rowIndex]) {
-          return {success:false,message:"This row is already full."}
+          return {success:false}
         }
         else if (this.patternRowContainsOtherColor(tileDescriptor.tiles[0].color, rowIndex)) {
-          return {success:false,message:"You cannot place tiles in a row that contains tiles of a different color."}
+          return {success:false}
         }
         else if (this.wallRowContainsColor(tileDescriptor.tiles[0].color, rowIndex)) {
-          return {success:false,message:"The wall tile in this row of that color has already been filled."}
+          return {success:false}
         }
       }
 

@@ -129,15 +129,37 @@ function pattern_row_clicked(event, args) {
         color:'red'})
       return
     }
-    placeSelectedTileInRow(gameState,args.row)
+    let player = gameState.players[gameState.currentPlayerIndex]
+    let rowIndex = args.row
+    if (rowIndex < player.patternRows.length) {
+      if (player.patternRows[rowIndex].length >= player.patternRowSize[rowIndex]) {
+        win.webContents.send('temporary_message',{message:"This row is already full.",
+          color:'red'})
+        return
+      }
+      else if (player.patternRowContainsOtherColor(gameState.selectedTile.tiles[0].color, rowIndex)) {
+        win.webContents.send('temporary_message',{message:
+          "You cannot place tiles in a row that contains tiles of a different color.",
+          color:'red'})
+        return
+      }
+      else if (player.wallRowContainsColor(gameState.selectedTile.tiles[0].color, rowIndex)) {
+        win.webContents.send('temporary_message',{message:
+          "The wall tile in this row of that color has already been filled.",
+          color:'red'})
+        return
+      }
+    }
+
+    placeSelectedTileInRow(gameState,args.row, gameState.selectedTile)
 }
 
-function placeSelectedTileInRow(gameState, row) {
+function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
   let result = gameState.players[gameState.currentPlayerIndex].placeTilesInPatternRow(
-    gameState.selectedTile, row, gameState)
+    selectedTileDescriptor, row, gameState)
     if (result.success) {
-      var color = gameState.selectedTile.tiles[0].color
-      var number = gameState.selectedTile.tiles.length
+      var color = selectedTileDescriptor.tiles[0].color
+      var number = selectedTileDescriptor.tiles.length
       var pluralSuffix = ""
       var pronoun = "it"
       if (number > 1) {
@@ -167,17 +189,23 @@ function placeSelectedTileInRow(gameState, row) {
       }
       win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
       win.webContents.send('configure_player', {index:gameState.currentPlayerIndex,player:gameState.players[gameState.currentPlayerIndex]})
-      gameState.currentPlayerIndex += 1
-      if (gameState.currentPlayerIndex >= gameState.players.length) {
-        gameState.currentPlayerIndex = 0
-      }
 
-      configureMainMessage(gameState)
+      prepareForNextPlayer(gameState)
+
     }
     else {
       win.webContents.send('temporary_message',{message:result.message,color:'red'})
     }
-  }
+}
+
+function prepareForNextPlayer(gameState) {
+    gameState.currentPlayerIndex += 1
+    if (gameState.currentPlayerIndex >= gameState.players.length) {
+      gameState.currentPlayerIndex = 0
+    }
+
+    configureMainMessage(gameState)
+}
 
 function configureMainMessage(gameState) {
   if (gameState.selectedTile == null) {
