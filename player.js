@@ -103,5 +103,81 @@ function _getDefaultPlayerObject () {
       return {success:true,discard:discardLineTotal,firstTile:tookFirstTile}
     }
 
+    newPlayer.performWallTiling = function(gameState) {
+      var results = []
+
+      this.patternRows.forEach((e,i) => {
+          if (e.length >= this.patternRowSize[i]) {
+              var tile = e.pop()
+              var points = this.pointsFromAddingWallTileAtRow(tile.color,i)
+              this.score += points
+              this.wallTiles[i].push(tile)
+              while (e.length > 0) {
+                gameState.discardedTiles.push(e.pop())
+              }
+              results.push({color:tile.color,row:i,points:points})
+          }
+      })
+
+      var discardPoints = 0
+      this.discardLine.forEach((e,i) => {
+        if (i < this.discardPenalties.length) {
+          discardPoints += this.discardPenalties[i]
+        }
+        if (e.first != true) {
+          gameState.discardedTiles.push(e)
+        }
+      })
+      this.discardLine.length = 0
+      if (discardPoints != 0) {
+        this.score += discardPoints
+        results.push({points:discardPoints,row:"discard"})
+      }
+
+      return results
+    }
+
+    newPlayer.pointsFromAddingWallTileAtRow = function(color,row) {
+        var colIndex = this.wallPattern[row].findIndex((e) => e == color)
+        var points = 1
+        var multipleHorizontal = false
+        var multipleVertical = false
+        //check horizontal row
+        for (var i= colIndex - 1; i >= 0; i--) {
+            if (this.wallTiles[row].findIndex((e) => e == this.wallPattern[row][i]) < 0) {
+                break
+            }
+            multipleHorizontal = true
+            points += 1
+        }
+        for (var i = colIndex + 1; i < this.wallPattern[row].length; i++) {
+            if (this.wallTiles[row].findIndex((e) => e == this.wallPattern[row][i]) < 0) {
+                break
+            }
+            multipleHorizontal = true
+            points += 1
+        }
+
+        //check vertical column
+        for (var i= row - 1; i >= 0; i--) {
+            if (this.wallTiles[i].findIndex((e) => e == this.wallPattern[i][colIndex]) < 0) {
+                break
+            }
+            multipleVertical = true
+            points += 1
+        }
+        for (var i = row + 1; i < this.wallPattern.length; i++) {
+            if (this.wallTiles[i].findIndex((e) => e == this.wallPattern[i][colIndex]) < 0) {
+                break
+            }
+            multipleVertical = true
+            points += 1
+        }
+        if (multipleVertical && multipleHorizontal) {
+          points += 1
+        }
+        return points
+    }
+
     return newPlayer
 }

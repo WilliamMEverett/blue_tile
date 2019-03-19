@@ -81,8 +81,7 @@ function renderer_initialized(event, args) {
     win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
   }
 
-  configureMainMessage(gameState)
-  win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start")
+  nextPlayerStart(gameState)
 }
 
 function tile_slot_clicked(event, args) {
@@ -199,11 +198,97 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
 }
 
 function prepareForNextPlayer(gameState) {
-    gameState.currentPlayerIndex += 1
-    if (gameState.currentPlayerIndex >= gameState.players.length) {
-      gameState.currentPlayerIndex = 0
+
+    //check if factory displays are empty
+    var displayContainsTiles = false
+    if (gameState.factoryDisplays.findIndex((e) => e.length > 0) >= 0) {
+      displayContainsTiles = true
+    }
+    if (!displayContainsTiles) {
+      if (gameState.centerDisplay.findIndex((e) => e.first != true) >= 0) {
+        displayContainsTiles = true
+      }
     }
 
+    if (!displayContainsTiles) {
+      win.webContents.send('log_message', "Tile Selection phase has ended.")
+      performWallTiling(gameState)
+    }
+    else {
+      gameState.currentPlayerIndex += 1
+      if (gameState.currentPlayerIndex >= gameState.players.length) {
+        gameState.currentPlayerIndex = 0
+      }
+
+      nextPlayerStart(gameState)
+    }
+}
+
+function performWallTiling(gameState) {
+
+    var fullRow = false
+    var nextFirstPlayer = -1
+    gameState.players.forEach( (e,i) => {
+        if (e.discardLine.findIndex(t => t.first === true) >= 0) {
+          nextFirstPlayer = i
+        }
+
+        var res = e.performWallTiling(gameState)
+        res.forEach( r => {
+          if (r.row == "discard") {
+            win.webContents.send('log_message', `Player ${i + 1} loses ${r.points*-1} points from discarded tiles.`)
+          }
+          else {
+            win.webContents.send('log_message', `Player ${i + 1} gains ${r.points} points from placing ${r.color} tile in row ${r.row + 1}.`)
+          }
+        })
+
+        for (var j =0; j < e.wallTiles.length; j++) {
+          if (e.wallTiles[j].length >= e.wallPattern[j].length) {
+            fullRow = true
+            win.webContents.send('log_message', `Player ${i + 1} has completed row ${j + 1}.`)
+          }
+        }
+
+    })
+
+    if (fullRow) {
+      performEndOfGame(gameState)
+    }
+    else {
+      if (nextFirstPlayer >= 0) {
+        gameState.currentPlayerIndex = nextFirstPlayer
+      }
+      else {
+        gameState.currentPlayerIndex += 1
+        if (gameState.currentPlayerIndex >= gameState.players.length) {
+          gameState.currentPlayerIndex = 0
+        }
+      }
+
+      assignTilesToDisplay(gameState)
+
+      for (var i=0; i< gameState.factoryDisplays.length; i++) {
+        win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+      }
+      win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+
+      for (var i=0; i< gameState.players.length; i++) {
+        win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+      }
+
+      win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start this round.")
+
+      nextPlayerStart(gameState)
+
+    }
+}
+
+function performEndOfGame(gameState) {
+  win.webContents.send('log_message', "End of Game")
+}
+
+function nextPlayerStart(gameState) {
     configureMainMessage(gameState)
 }
 
@@ -260,6 +345,8 @@ function initializeBoard(numberOfPlayers, gameState) {
       gameState.players.push(newPlayer)
     }
     gameState.currentPlayerIndex = 0
+
+    win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start")
 }
 
 function assignTilesToDisplay(gameState) {
