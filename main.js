@@ -1,22 +1,12 @@
 ﻿
 const { app, BrowserWindow, ipcMain } = require('electron')
 const Player = require('./player');
+const GameState = require('./gamestate');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
-
-var gameState = new Object()
-gameState.tileArray = []
-gameState.discardedTiles = []
-gameState.factoryDisplays = []
-gameState.centerDisplay = []
-gameState.players = []
-gameState.currentPlayerIndex = -1
-gameState.selectedTile = null
-gameState.numberOfDisplays = 5
-
-const displayNumberLookup = {1:3,2:5,3:7,4:9}
+var gameS
 
 function createWindow () {
   // Create the browser window.
@@ -68,29 +58,32 @@ app.on('activate', () => {
 })
 
 function renderer_initialized(event, args) {
-  initializeBoard(2, gameState)
 
-  win.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
-  win.webContents.send('set_number_players',gameState.players.length)
-  for (var i=0; i< gameState.factoryDisplays.length; i++) {
-    win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+  gameS = GameState.getDefaultGameState()
+  gameS.initializeBoard(2)
+
+  win.webContents.send('set_number_factory_displays',gameS.numberOfDisplays)
+  win.webContents.send('set_number_players',gameS.players.length)
+  for (var i=0; i< gameS.factoryDisplays.length; i++) {
+    win.webContents.send('configure_tile_displays',{index:i,tiles:gameS.factoryDisplays[i]})
   }
-  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameS.centerDisplay})
 
-  for (var i=0; i< gameState.players.length; i++) {
-    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+  for (var i=0; i< gameS.players.length; i++) {
+    win.webContents.send('configure_player', {index:i,player:gameS.players[i]})
   }
 
-  nextPlayerStart(gameState)
+  win.webContents.send('log_message', `Round ${gameS.currentRound}: Player ${(gameS.currentPlayerIndex + 1)} will start`)
+  nextPlayerStart(gameS)
 }
 
 function tile_slot_clicked(event, args) {
   var selectedArray = null
   if (args.display == "center") {
-    selectedArray = gameState.centerDisplay;
+    selectedArray = gameS.centerDisplay;
   }
-  else if (args.display < gameState.factoryDisplays.length) {
-    selectedArray = gameState.factoryDisplays[args.display]
+  else if (args.display < gameS.factoryDisplays.length) {
+    selectedArray = gameS.factoryDisplays[args.display]
   }
   if (selectedArray == null || args.slot < 0) {
     // win.webContents.send('log_message', "Error")
@@ -106,29 +99,29 @@ function tile_slot_clicked(event, args) {
         selectedTile = null
         win.webContents.send('temporary_message', {message:"You cannot select the first player tile. " +
         "You will, however, take it if you take any other tile from the center.",color:"red"})
-        configureMainMessage(gameState)
+        configureMainMessage(gameS)
         return
       }
 
       var selectedTiles = selectedArray.filter(currentElement => currentElement.color == color)
 
-      gameState.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray}
-      configureMainMessage(gameState)
+      gameS.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray}
+      configureMainMessage(gameS)
   }
 }
 
 function pattern_row_clicked(event, args) {
     // win.webContents.send('log_message', "Selected pattern row " + args.row)
-    if (gameState.selectedTile == null || gameState.selectedTile.tiles.length == 0) {
+    if (gameS.selectedTile == null || gameS.selectedTile.tiles.length == 0) {
       return
     }
-    if (args.player != gameState.currentPlayerIndex) {
+    if (args.player != gameS.currentPlayerIndex) {
       win.webContents.send('temporary_message',{message:
-        "That is not the current player. The current player is #" + (gameState.currentPlayerIndex + 1),
+        "That is not the current player. The current player is #" + (gameS.currentPlayerIndex + 1),
         color:'red'})
       return
     }
-    let player = gameState.players[gameState.currentPlayerIndex]
+    let player = gameS.players[gameS.currentPlayerIndex]
     let rowIndex = args.row
     if (rowIndex < player.patternRows.length) {
       if (player.patternRows[rowIndex].length >= player.patternRowSize[rowIndex]) {
@@ -136,13 +129,13 @@ function pattern_row_clicked(event, args) {
           color:'red'})
         return
       }
-      else if (player.patternRowContainsOtherColor(gameState.selectedTile.tiles[0].color, rowIndex)) {
+      else if (player.patternRowContainsOtherColor(gameS.selectedTile.tiles[0].color, rowIndex)) {
         win.webContents.send('temporary_message',{message:
           "You cannot place tiles in a row that contains tiles of a different color.",
           color:'red'})
         return
       }
-      else if (player.wallRowContainsColor(gameState.selectedTile.tiles[0].color, rowIndex)) {
+      else if (player.wallRowContainsColor(gameS.selectedTile.tiles[0].color, rowIndex)) {
         win.webContents.send('temporary_message',{message:
           "The wall tile in this row of that color has already been filled.",
           color:'red'})
@@ -150,39 +143,15 @@ function pattern_row_clicked(event, args) {
       }
     }
 
-    placeSelectedTileInRow(gameState,args.row, gameState.selectedTile)
+    placeSelectedTileInRow(gameS,args.row, gameS.selectedTile)
 }
 
 function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
-  let result = gameState.players[gameState.currentPlayerIndex].placeTilesInPatternRow(
-    selectedTileDescriptor, row, gameState)
+  let result = gameState.placeSelectedTileInRow(row, selectedTileDescriptor)
     if (result.success) {
-      var color = selectedTileDescriptor.tiles[0].color
-      var number = selectedTileDescriptor.tiles.length
-      var pluralSuffix = ""
-      var pronoun = "it"
-      if (number > 1) {
-        pluralSuffix = "s"
-        pronoun = "them"
-      }
-      var logMessage = "Player " + (gameState.currentPlayerIndex + 1) + " took " + number +
-      " " + color + " tile" + pluralSuffix
-      if (row < gameState.players[gameState.currentPlayerIndex].patternRows.length) {
-        logMessage += " and placed " + pronoun + " in row " + (row + 1) + "."
-      }
-      else {
-        logMessage += "."
-      }
-      if (result.discard > 0) {
-        logMessage += " " + result.discard + " of those went to the discard row."
-      }
-      if (result.firstTile) {
-        logMessage += " The player also took the first player tile."
-      }
-      win.webContents.send('log_message', logMessage)
 
-      gameState.selectedTile = null
-      sortTileArray(gameState.centerDisplay)
+      win.webContents.send('log_message', result.message)
+
       for (var i=0; i< gameState.factoryDisplays.length; i++) {
         win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
       }
@@ -199,74 +168,36 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
 
 function prepareForNextPlayer(gameState) {
 
-    //check if factory displays are empty
-    var displayContainsTiles = false
-    if (gameState.factoryDisplays.findIndex((e) => e.length > 0) >= 0) {
-      displayContainsTiles = true
-    }
-    if (!displayContainsTiles) {
-      if (gameState.centerDisplay.findIndex((e) => e.first != true) >= 0) {
-        displayContainsTiles = true
-      }
-    }
-
-    if (!displayContainsTiles) {
-      win.webContents.send('log_message', "Tile Selection phase has ended.")
+    let res = gameState.prepareForNextPlayer()
+    if (res.roundEnd === true) {
+      win.webContents.send('log_message', res.message)
       performWallTiling(gameState)
     }
     else {
-      gameState.currentPlayerIndex += 1
-      if (gameState.currentPlayerIndex >= gameState.players.length) {
-        gameState.currentPlayerIndex = 0
-      }
-
       nextPlayerStart(gameState)
     }
+
 }
 
 function performWallTiling(gameState) {
 
-    var fullRow = false
-    var nextFirstPlayer = -1
-    gameState.players.forEach( (e,i) => {
-        if (e.discardLine.findIndex(t => t.first === true) >= 0) {
-          nextFirstPlayer = i
-        }
+    let nextFirstPlayer = gameState.nextFirstPlayer()
+    let messages = gameState.performWallTiling()
+    messages.forEach(e => win.webContents.send('log_message', e))
 
-        var res = e.performWallTiling(gameState)
-        res.forEach( r => {
-          if (r.row == "discard") {
-            win.webContents.send('log_message', `Player ${i + 1} loses ${r.points*-1} points from discarded tiles.`)
-          }
-          else {
-            win.webContents.send('log_message', `Player ${i + 1} gains ${r.points} points from placing ${r.color} tile in row ${r.row + 1}.`)
-          }
-        })
-
-        for (var j =0; j < e.wallTiles.length; j++) {
-          if (e.wallTiles[j].length >= e.wallPattern[j].length) {
-            fullRow = true
-            win.webContents.send('log_message', `Player ${i + 1} has completed row ${j + 1}.`)
-          }
-        }
-
-    })
-
-    if (fullRow) {
+    if (gameState.gameIsEnded() === true) {
       performEndOfGame(gameState)
+      return
     }
     else {
+      gameState.currentRound += 1
       if (nextFirstPlayer >= 0) {
         gameState.currentPlayerIndex = nextFirstPlayer
       }
       else {
-        gameState.currentPlayerIndex += 1
-        if (gameState.currentPlayerIndex >= gameState.players.length) {
-          gameState.currentPlayerIndex = 0
-        }
+        gameState.advanceToNextPlayer()
       }
-
-      assignTilesToDisplay(gameState)
+      gameState.assignTilesToDisplay(gameState)
 
       for (var i=0; i< gameState.factoryDisplays.length; i++) {
         win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
@@ -277,19 +208,18 @@ function performWallTiling(gameState) {
         win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
       }
 
-      win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start this round.")
+      win.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
 
       nextPlayerStart(gameState)
-
     }
-}
-
-function performEndOfGame(gameState) {
-  win.webContents.send('log_message', "End of Game")
 }
 
 function nextPlayerStart(gameState) {
     configureMainMessage(gameState)
+}
+
+function performEndOfGame(gameState) {
+  win.webContents.send('log_message', "End of Game")
 }
 
 function configureMainMessage(gameState) {
@@ -317,90 +247,4 @@ function configureMainMessage(gameState) {
     message += " Select a pattern row (or the discard line) to place the tiles."
     win.webContents.send('main_message', message)
   }
-}
-
-function initializeBoard(numberOfPlayers, gameState) {
-    gameState.discardedTiles.length = 0
-    gameState.tileArray.length = 0
-    gameState.factoryDisplays.length = 0
-    gameState.centerDisplay.length = 0
-    gameState.players.length = 0
-
-    var colors = ['blue','red','green','black','yellow']
-    colors.forEach((c) => {
-      for (var i=0; i< 20; i++) {
-        let newTile = new Object()
-        newTile.color = c
-        newTile.first = false
-        gameState.tileArray.push(newTile)
-      }
-    })
-
-    shuffleArray(gameState.tileArray)
-    gameState.numberOfDisplays = displayNumberLookup[''+numberOfPlayers]
-    assignTilesToDisplay(gameState)
-    for (var i =0; i< numberOfPlayers; i++) {
-      let newPlayer = Player.getDefaultPlayerObject()
-      newPlayer.playerNumber = i
-      gameState.players.push(newPlayer)
-    }
-    gameState.currentPlayerIndex = 0
-
-    win.webContents.send('log_message', "Player " + (gameState.currentPlayerIndex + 1) + " will start")
-}
-
-function assignTilesToDisplay(gameState) {
-    gameState.factoryDisplays.length = 0
-    gameState.centerDisplay.length = 0
-
-
-    for (var i=0; i< gameState.numberOfDisplays; i++) {
-      var newDisplay = []
-      while (newDisplay.length < 4 && (gameState.tileArray.length > 0 || gameState.discardedTiles.length > 0)) {
-        if (gameState.tileArray.length == 0) {
-          while (gameState.discardedTiles.length > 0) {
-            gameState.tileArray.push(gameState.discardedTiles.pop())
-          }
-          shuffleArray(gameState.tileArray)
-        }
-        if (gameState.tileArray.length > 0) {
-          newDisplay.push(gameState.tileArray.pop())
-        }
-      }
-      sortTileArray(newDisplay)
-
-      gameState.factoryDisplays.push(newDisplay)
-    }
-    let firstTile = new Object()
-    firstTile.color = 'white'
-    firstTile.first = true
-    gameState.centerDisplay.push(firstTile)
-}
-
-function sortTileArray(tArray) {
-  var lookupMap = new Map()
-  lookupMap.set('white',1000)
-  tArray.forEach((e)=>{
-    var currentCount = lookupMap.get(e.color)
-    if (currentCount == null) {
-      currentCount = 0
-    }
-    currentCount++
-    lookupMap.set(e.color,currentCount)
-  })
-  tArray.sort((o1,o2)=>{
-    if (lookupMap.get(o1.color) == lookupMap.get(o2.color)) {
-      return ('' + o1.color).localeCompare(o2.color);
-    }
-    else {
-      return lookupMap.get(o2.color) - lookupMap.get(o1.color)
-    }
-  })
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
 }

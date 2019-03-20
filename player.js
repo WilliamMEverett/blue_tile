@@ -144,14 +144,14 @@ function _getDefaultPlayerObject () {
         var multipleVertical = false
         //check horizontal row
         for (var i= colIndex - 1; i >= 0; i--) {
-            if (this.wallTiles[row].findIndex((e) => e == this.wallPattern[row][i]) < 0) {
+            if (!this.wallRowContainsColor(this.wallPattern[row][i], row)) {
                 break
             }
             multipleHorizontal = true
             points += 1
         }
         for (var i = colIndex + 1; i < this.wallPattern[row].length; i++) {
-            if (this.wallTiles[row].findIndex((e) => e == this.wallPattern[row][i]) < 0) {
+            if (!this.wallRowContainsColor(this.wallPattern[row][i], row)) {
                 break
             }
             multipleHorizontal = true
@@ -160,14 +160,14 @@ function _getDefaultPlayerObject () {
 
         //check vertical column
         for (var i= row - 1; i >= 0; i--) {
-            if (this.wallTiles[i].findIndex((e) => e == this.wallPattern[i][colIndex]) < 0) {
+            if (!this.wallRowContainsColor(this.wallPattern[i][colIndex],i)) {
                 break
             }
             multipleVertical = true
             points += 1
         }
         for (var i = row + 1; i < this.wallPattern.length; i++) {
-            if (this.wallTiles[i].findIndex((e) => e == this.wallPattern[i][colIndex]) < 0) {
+            if (!this.wallRowContainsColor(this.wallPattern[i][colIndex],i)) {
                 break
             }
             multipleVertical = true
