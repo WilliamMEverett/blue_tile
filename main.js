@@ -220,6 +220,27 @@ function nextPlayerStart(gameState) {
 
 function performEndOfGame(gameState) {
   win.webContents.send('log_message', "End of Game")
+  let messages = gameState.calculateFinalBonusPoints()
+  messages.forEach(e => win.webContents.send('log_message', e))
+  for (var i=0; i< gameState.players.length; i++) {
+    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+  }
+
+  let winningPlayers = gameState.winningPlayers()
+  if (winningPlayers.length == 1) {
+    win.webContents.send('log_message', `Player ${winningPlayers[0].playerNumber + 1} wins.`)
+  }
+  else if (winningPlayers.length > 1) {
+    var playerNumberString = ""
+    winningPlayers.forEach( (e,i) => {
+      if (i > 0) {
+        playerNumberString += " and "
+      }
+      playerNumberString += '' + (e.playerNumber + 1)
+    })
+    win.webContents.send('log_message', `Tie between players ${playerNumberString}.`)
+  }
+
 }
 
 function configureMainMessage(gameState) {

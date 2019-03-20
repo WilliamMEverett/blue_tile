@@ -179,5 +179,58 @@ function _getDefaultPlayerObject () {
         return points
     }
 
+    newPlayer.addFinalBonusPoints = function() {
+      var result = []
+      var colorLookup = new Map()
+      var columnLookup = new Map()
+      this.wallTiles.forEach( (e,i) => {
+          if (e.length >= this.wallPattern[i].length) {
+            this.score += 2
+            result.push({points:2,row:i,type:"horizontal"})
+          }
+          for (var j = 0; j < this.wallPattern[i].length; j++) {
+            var color = this.wallPattern[i][j]
+            if (this.wallRowContainsColor(color,i)) {
+                var colorTotal = colorLookup.get(color)
+                if (colorTotal == null) {
+                  colorTotal = 0
+                }
+                colorTotal += 1
+                colorLookup.set(color,colorTotal)
+                var colTotal = columnLookup.get(j)
+                if (colTotal == null) {
+                  colTotal = 0
+                }
+                colTotal += 1
+                columnLookup.set(j,colTotal)
+            }
+          }
+      })
+      columnLookup.forEach( (val,key) => {
+          if (val >= this.wallPattern.length) {
+            this.score += 7
+            result.push({points:7,column:key,type:"vertical"})
+          }
+      })
+      colorLookup.forEach( (val,key) => {
+        if (val >= this.wallPattern[0].length) {
+          this.score += 10
+          result.push({points:10,color:key,type:"color"})
+        }
+      })
+
+      return result
+    }
+
+    newPlayer.numberOfCompletedRows = function() {
+      var result = 0
+      this.wallTiles.forEach( (e,i) => {
+        if (e.length >= this.wallPattern[i].length) {
+          result += 1
+        }
+      })
+      return result
+    }
+
     return newPlayer
 }

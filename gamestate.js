@@ -187,6 +187,45 @@ function _getDefaultGameState() {
         this.centerDisplay.push(firstTile)
     }
 
+    gameState.calculateFinalBonusPoints = function() {
+      var resultMessages = []
+
+      this.players.forEach( (e,i) => {
+          var res = e.addFinalBonusPoints()
+          res.forEach( r => {
+            if (r.type == 'horizontal') {
+              resultMessages.push(`Player ${i + 1} gets ${r.points} points from completing row ${r.row + 1}.`)
+            }
+            else if (r.type == 'vertical') {
+              resultMessages.push(`Player ${i + 1} gets ${r.points} points from completing column ${r.column + 1}.`)
+            }
+            else if (r.type == 'color') {
+              resultMessages.push(`Player ${i + 1} gets ${r.points} points from completing the color ${r.color}.`)
+            }
+          })
+
+      })
+      return resultMessages
+    }
+
+    gameState.winningPlayers = function() {
+      var winningPlayers = this.players.slice()
+      winningPlayers.sort( (o1,o2) => {
+        if (o1.score === o2.score) {
+          return o2.numberOfCompletedRows() - o1.numberOfCompletedRows()
+        }
+        else {
+          return o2.score - o1.score
+        }
+      })
+      let topScore = winningPlayers[0].score
+      let topPlayerRows = winningPlayers[0].numberOfCompletedRows()
+
+      return winningPlayers.filter( e => {
+        e.score == topScore && e.numberOfCompletedRows() == topPlayerRows
+      })
+    }
+
     return gameState
 }
 
