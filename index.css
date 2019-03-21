@@ -25,6 +25,7 @@
   font-family: "serif";
   outline: dashed black 1px;
   overflow: hidden;
+  transition: background-color 1000ms linear;
 }
 
 .mainMessage {
@@ -47,6 +48,7 @@
   height: 30px;
   width: 30px;
   outline: solid black 1px;
+  transition: background-color 1000ms linear;
 }
 
 .player_wall_slot_border {
@@ -63,6 +65,7 @@
   height: 24px;
   width: 24px;
   margin: 3px;
+  transition: background-color 1000ms linear;
 }
 
 .player_discard {
@@ -85,6 +88,7 @@
   height: 30px;
   width: 30px;
   outline: solid black 1px;
+  transition: background-color 1000ms linear;
 }
 
 .player_wall_rows {
