@@ -4,11 +4,17 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+      "test": "mocha"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^4.1.0"
+    "chai": "^4.2.0",
+    "electron": "^4.1.0",
+    "mocha": "^6.0.2"
+  },
+  "directories": {
+    "test": "test"
   }
 }

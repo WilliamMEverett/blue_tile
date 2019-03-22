@@ -209,8 +209,9 @@ function _getDefaultGameState() {
     }
 
     gameState.winningPlayers = function() {
-      var winningPlayers = this.players.slice()
-      winningPlayers.sort( (o1,o2) => {
+      var result = this.players.slice()
+
+      result.sort( (o1,o2) => {
         if (o1.score === o2.score) {
           return o2.numberOfCompletedRows() - o1.numberOfCompletedRows()
         }
@@ -218,12 +219,10 @@ function _getDefaultGameState() {
           return o2.score - o1.score
         }
       })
-      let topScore = winningPlayers[0].score
-      let topPlayerRows = winningPlayers[0].numberOfCompletedRows()
+      let topScore = result[0].score
+      let topPlayerRows = result[0].numberOfCompletedRows()
 
-      return winningPlayers.filter( e => {
-        e.score == topScore && e.numberOfCompletedRows() == topPlayerRows
-      })
+      return result.filter( e => e.score == topScore && e.numberOfCompletedRows() == topPlayerRows )
     }
 
     return gameState
