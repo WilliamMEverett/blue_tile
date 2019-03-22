@@ -4,6 +4,7 @@ function init() {
 
   ipcRenderer.on('configure_tile_displays', configure_tile_displays)
   ipcRenderer.on('configure_player', configure_player)
+  ipcRenderer.on('select_player', select_player)
   ipcRenderer.on('set_number_factory_displays', set_number_factory_displays)
   ipcRenderer.on('set_number_players', set_number_players)
   ipcRenderer.on('log_message', log_message)
@@ -134,6 +135,26 @@ function configure_player(event, arg) {
     }
   })
 
+}
+
+function select_player(event, arg) {
+    let playerBoardsElement = document.getElementById('playerBoards')
+    let playerBoardNodes = playerBoardsElement.querySelectorAll('.player_board')
+    playerBoardNodes.forEach( (e,i) => {
+        if (arg.index == i) {
+            e.style.outline = 'solid gold 3px'
+            e.style.opacity = null
+        }
+        else {
+            if (arg.index >= 0) {
+              e.style.opacity = 0.8
+            }
+            else {
+              e.style.opacity = null
+            }
+            e.style.outline = null
+        }
+    })
 }
 
 function set_number_factory_displays(event, arg) {

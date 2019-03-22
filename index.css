@@ -116,6 +116,11 @@
   outline: dotted blue 1px;
   height: 350px;
   width: 380px;
+  transition: outline-color 1000ms linear;
+}
+
+.full_width_table {
+  width: 100%;
 }
 
 #playerBoards {

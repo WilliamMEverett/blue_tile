@@ -168,6 +168,7 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
 
 function prepareForNextPlayer(gameState) {
 
+    win.webContents.send('select_player',{index:-1})
     let res = gameState.prepareForNextPlayer()
     if (res.roundEnd === true) {
       win.webContents.send('log_message', res.message)
@@ -215,6 +216,7 @@ function performWallTiling(gameState) {
 }
 
 function nextPlayerStart(gameState) {
+    win.webContents.send('select_player',{index:gameState.currentPlayerIndex})
     configureMainMessage(gameState)
 }
 
