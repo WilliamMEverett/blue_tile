@@ -281,8 +281,9 @@ function performEndOfGame(gameState) {
   }
 
   let winningPlayers = gameState.winningPlayers()
+  var message = ""
   if (winningPlayers.length == 1) {
-    win.webContents.send('log_message', `Player ${winningPlayers[0].playerNumber + 1} wins.`)
+    message = `Player ${winningPlayers[0].playerNumber + 1} wins.`
   }
   else if (winningPlayers.length > 1) {
     var playerNumberString = ""
@@ -292,9 +293,11 @@ function performEndOfGame(gameState) {
       }
       playerNumberString += '' + (e.playerNumber + 1)
     })
-    win.webContents.send('log_message', `Tie between players ${playerNumberString}.`)
+    message = `Tie between players ${playerNumberString}.`
   }
 
+  win.webContents.send('log_message', message)
+  win.webContents.send('main_message', "Game Over. " + message)
 }
 
 function configureMainMessage(gameState) {
