@@ -1,13 +1,15 @@
 html {
     margin: 5px 5px 5px 5px;
     height: calc(100% - 10px);
+    width: calc(100% - 10px);
     outline: solid black 5px;
-    background-color: #EFEFEF;
+    background-color: #F8F8F8;
 }
 
 body {
   height: 95%;
-  width: 95%;
+  margin: 5px;
+  width: calc(100% - 25px);
 }
 
 .main_modal_body {
@@ -23,9 +25,14 @@ body {
 #text_holder {
   flex: 1 1 auto;
   height: calc(100% - 50px);
+  margin: 5px;
   overflow-y: auto;
   text-align: center;
-  outline: dashed blue 1px;
+/*  outline: dashed blue 1px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font: 15px "tahoma";
 }
 
 #button_holder {
@@ -41,9 +48,14 @@ body {
 #cancel_button {
   flex: 0 0 auto;
   width: 75px;
+  font: 18px "tahoma";
+  font-weight: bold;
+  color: #A00000;
 }
 
 #accept_button {
   flex: 0 0 auto;
   width: 75px;
+  font: 18px "tahoma";
+  font-weight: bold;
 }
