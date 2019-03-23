@@ -1,6 +1,37 @@
+body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+html {
+    margin: 5px;
+    height: 95%;
+    min-height: 95%;
+}
+
+#mainPlayArea {
+  outline: solid blue 1px;
+  width: 100%;
+}
+
+#logPanel {
+  outline: solid red 1px;
+  overflow: auto;
+  flex-grow: 1;
+  margin-top: 5px;
+}
+
 #factory_display_table {
   height: 95px;
   overflow: hidden;
+}
+
+#playerBoards {
+  overflow-x: scroll;
+  width: 100%;
+  max-width: 100%;
+  outline: solid black 1px;
 }
 
 .factory_display {
@@ -117,25 +148,4 @@
   height: 350px;
   width: 380px;
   transition: outline-color 1000ms linear;
-}
-
-.full_width_table {
-  width: 100%;
-}
-
-#playerBoards {
-  overflow-x: scroll;
-  width: 100%;
-  outline: solid black 1px;
-}
-
-#mainPlayArea {
-  outline: solid blue 1px;
-  width: 100%;
-}
-
-#logPanel {
-  outline: solid red 1px;
-  overflow: auto;
-  height: 100px;
 }

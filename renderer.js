@@ -147,7 +147,7 @@ function select_player(event, arg) {
         }
         else {
             if (arg.index >= 0) {
-              e.style.opacity = 0.8
+              e.style.opacity = 0.7
             }
             else {
               e.style.opacity = null
