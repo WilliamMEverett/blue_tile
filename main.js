@@ -86,7 +86,9 @@ function renderer_initialized(event, args) {
 
 function confirmation_modal_accept(event, args) {
   if (BrowserWindow.fromWebContents(event.sender) === confirmationWin) {
-    win.webContents.send('log_message', `Confirmation sent ${args.passBackObject}`)
+    if (args.passBackObject.action == "placeTile") {
+      confirmPlaceTile(args.passBackObject.player,args.passBackObject.row,args.passBackObject.tileDescriptor)
+    }
     confirmationWin.destroy()
     confirmationWin = null
   }
@@ -97,7 +99,7 @@ function confirmation_modal_accept(event, args) {
 
 function confirmation_modal_cancel(event, args) {
   if (BrowserWindow.fromWebContents(event.sender) === confirmationWin) {
-    win.webContents.send('log_message', `Cancel sent ${args.passBackObject}`)
+    // win.webContents.send('log_message', `Cancel sent ${args.passBackObject}`)
     confirmationWin.destroy()
     confirmationWin = null
   }
@@ -106,16 +108,24 @@ function confirmation_modal_cancel(event, args) {
   }
 }
 
-function showConfirmationModal(text, passBackObject) {
+function showConfirmationModal(text, passBackObject, options) {
   if (confirmationWin) {
     confirmationWin.destroy()
     confirmationWin = null
   }
 
+  let info = new Object()
+  info.text = text
+  info.passBackObject = passBackObject
+  if (options) {
+    info.acceptText = options.acceptText
+    info.cancelText = options.cancelText
+  }
+
   confirmationWin = new BrowserWindow({parent: win, modal: true, width: 300, height: 300, show: false })
   confirmationWin.loadFile('confirmation_modal.html')
   confirmationWin.on('ready-to-show', () => {
-      confirmationWin.webContents.send('configure_confirmation_modal', {text:text, passBackObject:passBackObject})
+      confirmationWin.webContents.send('configure_confirmation_modal', info)
       confirmationWin.show()
   })
 
@@ -126,6 +136,14 @@ function showConfirmationModal(text, passBackObject) {
       // console.log("closed received for not current window")
     }
   })
+}
+
+function confirmPlaceTile(player,row,selectedTile) {
+    if (player != gameS.currentPlayerIndex) {
+      console.log("Received place tile callback for non-current player.")
+      return
+    }
+    placeSelectedTileInRow(gameS,row, selectedTile)
 }
 
 function tile_slot_clicked(event, args) {
@@ -157,7 +175,7 @@ function tile_slot_clicked(event, args) {
 
       var selectedTiles = selectedArray.filter(currentElement => currentElement.color == color)
 
-      gameS.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray}
+      gameS.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray,displayIndex:args.display}
       configureMainMessage(gameS)
   }
 }
@@ -195,10 +213,54 @@ function pattern_row_clicked(event, args) {
       }
     }
 
-    placeSelectedTileInRow(gameS,args.row, gameS.selectedTile)
+    var tileColor = gameS.selectedTile.tiles[0].color
+    var tileNumber = gameS.selectedTile.tiles.length
+    var displayName = ""
+
+    var sourceDisplay = ""
+    if (gameS.selectedTile.displayIndex == "center") {
+      sourceDisplay = "the center display"
+    }
+    else {
+      sourceDisplay = `display #${gameS.selectedTile.displayIndex + 1}`
+    }
+
+    var destinationRow = `pattern row ${args.row + 1}`
+    var discardWarning = ""
+    if (args.row >= gameS.players[gameS.currentPlayerIndex].patternRows.length) {
+      destinationRow = 'the discard line'
+    }
+    else {
+      var overflowNumber = gameS.players[gameS.currentPlayerIndex].patternRows[args.row].length + tileNumber
+      - gameS.players[gameS.currentPlayerIndex].patternRowSize[args.row]
+      if (overflowNumber > 0) {
+          discardWarning = ` ${overflowNumber} of those tiles will go in the discard line.`
+      }
+    }
+
+    var message = `Player ${gameS.currentPlayerIndex + 1}, do you want to place ${tileNumber} ` +
+    `${tileColor} tile${tileNumber > 1 ? 's' : ''} from ${sourceDisplay} into ${destinationRow}?${discardWarning}`
+
+    if (gameS.selectedTile.displayIndex == "center" && (gameS.centerDisplay.findIndex((e) => e.first === true) >= 0)) {
+      message += " You will also take the first player tile, which will be placed in the discard line."
+    }
+
+    showConfirmationModal(message,
+      {player:gameS.currentPlayerIndex,action:"placeTile",row:args.row,tileDescriptor:gameS.selectedTile},{acceptText:"Yes"})
 }
 
 function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
+  if (selectedTileDescriptor.displayIndex == 'center') {
+    selectedTileDescriptor.sourceArray = gameS.centerDisplay
+  }
+  else if (selectedTileDescriptor.displayIndex >= 0 && selectedTileDescriptor.displayIndex < gameS.factoryDisplays.length) {
+    selectedTileDescriptor.sourceArray = gameS.factoryDisplays[selectedTileDescriptor.displayIndex]
+  }
+  else {
+    console.log("Invalid display index in tile placing.")
+    return
+  }
+
   let result = gameState.placeSelectedTileInRow(row, selectedTileDescriptor)
     if (result.success) {
 

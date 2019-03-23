@@ -66,8 +66,11 @@ function _getDefaultPlayerObject () {
         }
       }
 
-      var tookFirstTile = false
       var colorOfTile = tileDescriptor.tiles[0].color
+
+      var tilesToTake = tileDescriptor.sourceArray.filter(e => e.color == colorOfTile)
+
+      var tookFirstTile = false
       if (tileDescriptor.sourceArray == gameState.centerDisplay) {
         var firstIndex = gameState.centerDisplay.findIndex((e) => e.first === true)
         if (firstIndex >= 0) {
@@ -75,7 +78,7 @@ function _getDefaultPlayerObject () {
           this.discardLine.push(gameState.centerDisplay[firstIndex])
           gameState.centerDisplay.splice(firstIndex,1)
         }
-        tileDescriptor.tiles.forEach((e) => {
+        tilesToTake.forEach((e) => {
           var ind = gameState.centerDisplay.indexOf(e)
           if (ind >= 0) {
             gameState.centerDisplay.splice(ind,1)
@@ -89,7 +92,7 @@ function _getDefaultPlayerObject () {
       }
 
       var discardLineTotal = 0
-      tileDescriptor.tiles.forEach((e) => {
+      tilesToTake.forEach((e) => {
         if (rowIndex < this.patternRows.length &&
            this.patternRows[rowIndex].length < this.patternRowSize[rowIndex]) {
           this.patternRows[rowIndex].push(e)
