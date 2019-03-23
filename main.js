@@ -7,13 +7,18 @@ const GameState = require('./gamestate');
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 var gameS
+var confirmationWin
 
 function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({ width: 1200, height: 800 })
-
+  // win.on('ready-to-show', () => {
+  //     console.log('Did finish load')
+  //     win.show()
+  // })
   // and load the index.html of the app.
   win.loadFile('index.html')
+
 
   // Open the DevTools.
   //win.webContents.openDevTools()
@@ -36,6 +41,8 @@ app.on('ready', () => {
     ipcMain.on('renderer_initialized', renderer_initialized)
     ipcMain.on('tile_slot_clicked', tile_slot_clicked)
     ipcMain.on('pattern_row_clicked', pattern_row_clicked)
+    ipcMain.on('confirmation_modal_cancel', confirmation_modal_cancel)
+    ipcMain.on('confirmation_modal_accept', confirmation_modal_accept)
 
     createWindow()
 })
@@ -77,7 +84,52 @@ function renderer_initialized(event, args) {
   nextPlayerStart(gameS)
 }
 
+function confirmation_modal_accept(event, args) {
+  if (BrowserWindow.fromWebContents(event.sender) === confirmationWin) {
+    win.webContents.send('log_message', `Confirmation sent ${args.passBackObject}`)
+    confirmationWin.destroy()
+    confirmationWin = null
+  }
+  else {
+    // console.log("received confirmation from other window")
+  }
+}
+
+function confirmation_modal_cancel(event, args) {
+  if (BrowserWindow.fromWebContents(event.sender) === confirmationWin) {
+    win.webContents.send('log_message', `Cancel sent ${args.passBackObject}`)
+    confirmationWin.destroy()
+    confirmationWin = null
+  }
+  else {
+    // console.log("received cancel from other window")
+  }
+}
+
+function showConfirmationModal(text, passBackObject) {
+  if (confirmationWin) {
+    confirmationWin.destroy()
+    confirmationWin = null
+  }
+
+  confirmationWin = new BrowserWindow({parent: win, modal: true, width: 300, height: 300, show: false })
+  confirmationWin.loadFile('confirmation_modal.html')
+  confirmationWin.on('ready-to-show', () => {
+      confirmationWin.webContents.send('configure_confirmation_modal', {text:text, passBackObject:passBackObject})
+      confirmationWin.show()
+  })
+
+  confirmationWin.on('closed', (e) => {
+    if (e === confirmationWin) {
+      confirmationWin = null
+    } else {
+      // console.log("closed received for not current window")
+    }
+  })
+}
+
 function tile_slot_clicked(event, args) {
+
   var selectedArray = null
   if (args.display == "center") {
     selectedArray = gameS.centerDisplay;

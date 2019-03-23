@@ -1,0 +1,49 @@
+html {
+    margin: 5px 5px 5px 5px;
+    height: calc(100% - 10px);
+    outline: solid black 5px;
+    background-color: #EFEFEF;
+}
+
+body {
+  height: 95%;
+  width: 95%;
+}
+
+.main_modal_body {
+  margin: 7px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+#text_holder {
+  flex: 1 1 auto;
+  height: calc(100% - 50px);
+  overflow-y: auto;
+  text-align: center;
+  outline: dashed blue 1px;
+}
+
+#button_holder {
+  flex: 0 0 auto;
+  height: 50px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+#cancel_button {
+  flex: 0 0 auto;
+  width: 75px;
+}
+
+#accept_button {
+  flex: 0 0 auto;
+  width: 75px;
+}
