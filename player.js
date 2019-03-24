@@ -8,6 +8,7 @@ function _getDefaultPlayerObject () {
     var newPlayer = new Object()
     newPlayer.playerNumber = -1
     newPlayer.computerPlayer = false
+    newPlayer.playerAI = null
     newPlayer.score = 0
     newPlayer.patternRows = [[],[],[],[],[]]
     newPlayer.patternRowSize = [1,2,3,4,5]
@@ -24,6 +25,7 @@ function _getDefaultPlayerObject () {
       let newObject = _getDefaultPlayerObject()
       newObject.playerNumber = this.playerNumber
       newObject.computerPlayer = this.computerPlayer
+      newObject.playerAI = this.playerAI
       newObject.score = this.score
       newObject.patternRows.length = 0
       this.patternRows.forEach( (e,i) => { newObject.patternRows.push(e.slice())})
@@ -152,6 +154,9 @@ function _getDefaultPlayerObject () {
       })
       this.discardLine.length = 0
       if (discardPoints != 0) {
+        if (discardPoints < 0 && (discardPoints + this.score < 0)) {
+          discardPoints = 0 - this.score
+        }
         this.score += discardPoints
         results.push({points:discardPoints,row:"discard"})
       }

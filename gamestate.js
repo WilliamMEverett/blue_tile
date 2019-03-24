@@ -4,6 +4,7 @@ module.exports = {
 }
 
 const Player = require('./player');
+const PlayerAI = require('./playerai');
 
 const displayNumberLookup = {1:3,2:5,3:7,4:9}
 
@@ -61,6 +62,10 @@ function _getDefaultGameState() {
       for (var i =0; i< numberPlayers; i++) {
         let newPlayer = Player.getDefaultPlayerObject()
         newPlayer.playerNumber = i
+        if (i > 0) {
+          newPlayer.computerPlayer = true
+          newPlayer.playerAI = PlayerAI.getDefaultPlayerAI()
+        }
         this.players.push(newPlayer)
       }
       this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
@@ -244,6 +249,42 @@ function _getDefaultGameState() {
 
       return result.filter( e => e.score == topScore && e.numberOfCompletedRows() == topPlayerRows )
     }
+
+    gameState.getAllTileSelectionChoices = function() {
+      var choices = []
+      this.factoryDisplays.forEach( (e,i) => {
+        if (e.length == 0) {
+          return
+        }
+        var colorMap = new Map()
+        e.forEach( (t,j) => {
+          var existing = colorMap.get(t.color)
+          if (!existing) {
+            existing = 0
+          }
+          existing += 1
+          colorMap.set(t.color,existing)
+        })
+        colorMap.forEach((v,k) => { choices.push({tileColor:k,tileNumber:v,displayIndex:i})})
+      })
+
+      let firstPresent = (this.centerDisplay.findIndex(e => e.first == true) >= 0)
+
+      var colorMap = new Map()
+      this.centerDisplay.forEach( (t) => {
+        var existing = colorMap.get(t.color)
+        if (!existing) {
+          existing = 0
+        }
+        existing += 1
+        colorMap.set(t.color,existing)
+      })
+      colorMap.forEach((v,k) => { choices.push({tileColor:k,tileNumber:v,displayIndex:'center',firstTile:firstPresent})})
+
+      return choices
+    }
+
+
 
     return gameState
 }

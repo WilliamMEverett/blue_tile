@@ -2,6 +2,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const Player = require('./player');
 const GameState = require('./gamestate');
+const PlayerAI = require('./playerai');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -175,6 +176,10 @@ function highlightRowBasedOnSelectedTile(gameState) {
 
 function tile_slot_clicked(event, args) {
 
+  if (gameS.players[gameS.currentPlayerIndex].computerPlayer) {
+    return
+  }
+
   var selectedArray = null
   if (args.display == "center") {
     selectedArray = gameS.centerDisplay;
@@ -216,6 +221,10 @@ function tile_slot_clicked(event, args) {
 }
 
 function pattern_row_clicked(event, args) {
+    if (gameS.players[gameS.currentPlayerIndex].computerPlayer) {
+      return
+    }
+
     // win.webContents.send('log_message', "Selected pattern row " + args.row)
     if (gameS.selectedTile == null || gameS.selectedTile.tileNumber == 0) {
       return
@@ -368,8 +377,21 @@ function performWallTiling(gameState) {
 }
 
 function nextPlayerStart(gameState) {
-    win.webContents.send('select_player',{index:gameState.currentPlayerIndex})
-    configureMainMessage(gameState)
+    var player = gameState.players[gameState.currentPlayerIndex]
+    if (!player.computerPlayer) {
+      win.webContents.send('select_player',{index:gameState.currentPlayerIndex})
+      configureMainMessage(gameState)
+    }
+    else {
+      var move = player.playerAI.moveForGamestate(player,gameState)
+      if (move == null) {
+        console.log("Error: AI could not make move")
+        win.webContents.send('log_message',"Error: AI could not make move");
+      }
+      else {
+        placeSelectedTileInRow(gameState,move.row,move.tileDescriptor)
+      }
+    }
 }
 
 function performEndOfGame(gameState) {

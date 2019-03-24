@@ -1,0 +1,121 @@
+
+module.exports = {
+  getDefaultPlayerAI: _getDefaultPlayerAI
+}
+
+function _getDefaultPlayerAI() {
+  return new PlayerAI()
+}
+
+class PlayerAI {
+  constructor() {
+    this.difficulty = 0
+    this.randomness = 0
+  }
+
+  moveForGamestate(player,gameState) {
+
+    var movesToCheck = this.rankedMoves(this.allPossibleNonDiscardMoves(gameState,player),player,gameState)
+    if (movesToCheck.length == 0) {
+      movesToCheck = this.rankedMoves(this.allPossibleDiscardMoves(gameState,player),player,gameState)
+    }
+    if (movesToCheck.length == 0) {
+      return null
+    }
+
+    var topScore = Number.MIN_SAFE_INTEGER
+    movesToCheck.forEach( e => {
+      if (e.score > topScore) {
+        topScore = e.score
+      }
+    })
+
+    var topMoves = movesToCheck.filter( e => e.score === topScore)
+    if (topMoves.length == 1) {
+      return topMoves[0]
+    }
+    else {
+      return topMoves[Math.floor(Math.random() * topMoves.length)]
+    }
+
+  }
+
+  rankedMoves(moves,player,gameState) {
+    var ranked = []
+    moves.forEach( e => {
+      var res = {score:this.rankingScoreForMove(player,e,gameState)}
+      ranked.push(Object.assign(res,e))
+    })
+    return ranked
+  }
+
+  allPossibleNonDiscardMoves(gameState,player) {
+
+    var moves = []
+    var tileSelections = gameState.getAllTileSelectionChoices()
+
+    tileSelections.forEach( (td) => {
+      for (var i=0; i < player.patternRows.length; i++) {
+        if (player.canPlaceTileInPatternRow({color:td.tileColor},i)) {
+          moves.push({row:i,tileDescriptor:td})
+        }
+      }
+    })
+    return moves
+  }
+
+  allPossibleDiscardMoves(gameState, player) {
+
+    var moves = []
+    var tileSelections = gameState.getAllTileSelectionChoices()
+
+    tileSelections.forEach( (td) => {
+        moves.push({row:player.patternRows.length,tileDescriptor:td})
+      })
+    return moves
+  }
+
+  rankingFirstTilePenalty() {
+    return -1
+  }
+
+  rankingDiscardPenalty(number) {
+    return -2*number
+  }
+
+  rankingFinishRowBonus(rowIndex) {
+    return 10
+  }
+
+  rankingPlaceTilesInRowBonus(number, rowIndex) {
+    return 2*number
+  }
+
+  rankingScoreForMove(player,move,gameState) {
+    var score = 0
+
+    if (move.row < player.patternRows.length) {
+      var tilesOverflow = (move.tileDescriptor.tileNumber + player.patternRows[move.row].length) - player.patternRowSize[move.row]
+      var tilesPlaced = move.tileDescriptor.tileNumber
+      if (tilesOverflow > 0) {
+        tilesPlaced -= tilesOverflow
+        score += this.rankingDiscardPenalty(tilesOverflow)
+      }
+      score += this.rankingPlaceTilesInRowBonus(tilesPlaced,move.row)
+
+      if (tilesOverflow >= 0) {
+        score += this.rankingFinishRowBonus(move.row)
+      }
+    }
+    else {
+      score += this.rankingDiscardPenalty(move.tileDescriptor.tileNumber)
+    }
+    if (move.firstTile) {
+      score += this.firstTilePenalty()
+    }
+
+    return score
+  }
+
+
+}
