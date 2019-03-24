@@ -183,8 +183,16 @@ function set_number_players(event, arg) {
 
 function log_message(event, arg) {
   var logPanel = document.getElementById('logPanel');
-  var text = document.createTextNode(arg)
+
+  let currentDate = new Date()
+
+  let dateString = currentDate.getHours().toString().padStart(2,"0") + ":" +
+  currentDate.getMinutes().toString().padStart(2,"0") + ":" +
+  currentDate.getSeconds().toString().padStart(2,"0")
+
+  var text = document.createTextNode("[" + dateString + "] " + arg)
   logPanel.appendChild(text)
+
   logPanel.appendChild(document.createElement('br'))
   logPanel.scrollTop = logPanel.scrollHeight - logPanel.clientHeight;
 }
