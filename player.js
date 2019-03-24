@@ -7,6 +7,7 @@ function _getDefaultPlayerObject () {
 
     var newPlayer = new Object()
     newPlayer.playerNumber = -1
+    newPlayer.computerPlayer = false
     newPlayer.score = 0
     newPlayer.patternRows = [[],[],[],[],[]]
     newPlayer.patternRowSize = [1,2,3,4,5]
@@ -18,6 +19,23 @@ function _getDefaultPlayerObject () {
     ['green','black','yellow','blue','red'],
     ['red','green','black','yellow','blue']]
     newPlayer.discardPenalties = [-1,-1,-2,-2,-2,-3,-3]
+
+    newPlayer.deepCopy = function() {
+      let newObject = _getDefaultPlayerObject()
+      newObject.playerNumber = this.playerNumber
+      newObject.computerPlayer = this.computerPlayer
+      newObject.score = this.score
+      newObject.patternRows.length = 0
+      this.patternRows.forEach( (e,i) => { newObject.patternRows.push(e.slice())})
+      newObject.patternRowSize = this.patternRowSize.slice()
+      newObject.wallTiles.length = 0
+      this.wallTiles.forEach( (e,i) => { newObject.wallTiles.push(e.slice())})
+      newObject.discardLine = this.discardLine.slice()
+      newObject.wallPattern.length = 0
+      this.wallPattern.forEach( (e,i) => { newObject.wallPattern.push(e.slice())})
+      newObject.discardPenalties = this.discardPenalties.slice()
+      return newObject
+    }
 
     newPlayer.wallRowContainsColor = function(color,row) {
       return this.wallTiles[row].reduce((accumulator, currentElement) => {

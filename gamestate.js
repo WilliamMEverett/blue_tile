@@ -19,6 +19,24 @@ function _getDefaultGameState() {
     gameState.numberOfDisplays = 5
     gameState.currentRound = 0
 
+    gameState.deepCopy = function() {
+      let newObject = _getDefaultGameState()
+      newObject.tileArray = this.tileArray.slice()
+      newObject.discardedTiles = this.discardedTiles.slice()
+      newObject.factoryDisplays.length = 0
+      this.factoryDisplays.forEach(e=> { newObject.factoryDisplays.push(e.slice())})
+      newObject.centerDisplay = this.centerDisplay.slice()
+      newObject.players.length = 0
+      this.players.forEach(e => {newObject.players.push(e.deepCopy())})
+      newObject.currentPlayerIndex = this.currentPlayerIndex
+      if (this.selectedTile) {
+        newObject.selectedTile = Object.assign({},this.selectedTile)
+      }
+      newObject.numberOfDisplays = this.numberOfDisplays
+      newObject.currentRound = this.currentRound
+      return newObject
+    }
+
     gameState.initializeBoard = function(numberPlayers) {
       this.discardedTiles.length = 0
       this.tileArray.length = 0
@@ -32,6 +50,7 @@ function _getDefaultGameState() {
           let newTile = new Object()
           newTile.color = c
           newTile.first = false
+          Object.freeze(newTile)
           this.tileArray.push(newTile)
         }
       })
@@ -184,6 +203,7 @@ function _getDefaultGameState() {
         let firstTile = new Object()
         firstTile.color = 'white'
         firstTile.first = true
+        Object.freeze(firstTile)
         this.centerDisplay.push(firstTile)
     }
 
