@@ -97,7 +97,6 @@ function highlight_tiles_in_display(event, arg) {
 }
 
 function highlight_pattern_rows(event, arg) {
-  log_message(null,"highlighting rows: " + arg.player + " - " + arg.rows.join(","))
   let playerBoardsElement = document.getElementById('playerBoards')
   let playerBoardNodes = playerBoardsElement.querySelectorAll('.player_board')
   if (arg.player >= playerBoardNodes.length) {
@@ -109,7 +108,6 @@ function highlight_pattern_rows(event, arg) {
   patternRows.forEach((e,i) => {
 
     if (arg.rows && (arg.rows.findIndex(e => e == i) >= 0)) {
-      log_message(null,"should highlight row " + i)
         e.style.outline = "solid #80FF80 1px"
     }
     else {

@@ -323,7 +323,8 @@ function prepareForNextPlayer(gameState) {
     let res = gameState.prepareForNextPlayer()
     if (res.roundEnd === true) {
       win.webContents.send('log_message', res.message)
-      performWallTiling(gameState)
+      win.webContents.send('main_message', "Wall tiling . . .")
+      setTimeout(function() {performWallTiling(gameState)}, 1000)
     }
     else {
       nextPlayerStart(gameState)
