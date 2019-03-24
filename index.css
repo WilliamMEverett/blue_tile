@@ -57,6 +57,7 @@ html {
   outline: dashed black 1px;
   overflow: hidden;
   transition: background-color 1000ms linear;
+  transition: outline-color 1000ms linear;
 }
 
 .mainMessage {
@@ -103,6 +104,7 @@ html {
   text-align: center;
   overflow: hidden;
   outline: solid red 1px;
+  transition: outline-color 1000ms linear;
 }
 
 .player_discard_penalty {
@@ -124,6 +126,10 @@ html {
 
 .player_wall_rows {
   outline: solid blue 2px;
+}
+
+.pattern_row {
+  transition: outline-color 1000ms linear;
 }
 
 .player_score_panel {

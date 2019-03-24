@@ -51,6 +51,7 @@ function _getDefaultPlayerObject () {
         if (this.patternRowContainsOtherColor(tile.color,row)) {
           return false
         }
+        return true
     }
 
     newPlayer.placeTilesInPatternRow = function(tileDescriptor, rowIndex, gameState) {
@@ -58,15 +59,15 @@ function _getDefaultPlayerObject () {
         if (this.patternRows[rowIndex].length >= this.patternRowSize[rowIndex]) {
           return {success:false}
         }
-        else if (this.patternRowContainsOtherColor(tileDescriptor.tiles[0].color, rowIndex)) {
+        else if (this.patternRowContainsOtherColor(tileDescriptor.tileColor, rowIndex)) {
           return {success:false}
         }
-        else if (this.wallRowContainsColor(tileDescriptor.tiles[0].color, rowIndex)) {
+        else if (this.wallRowContainsColor(tileDescriptor.tileColor, rowIndex)) {
           return {success:false}
         }
       }
 
-      var colorOfTile = tileDescriptor.tiles[0].color
+      var colorOfTile = tileDescriptor.tileColor
 
       var tilesToTake = tileDescriptor.sourceArray.filter(e => e.color == colorOfTile)
 

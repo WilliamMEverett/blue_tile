@@ -56,8 +56,8 @@ function _getDefaultGameState() {
         this.selectedTile = null
         sortTileArray(this.centerDisplay)
 
-        var color = selectedTileDescriptor.tiles[0].color
-        var number = selectedTileDescriptor.tiles.length
+        var color = selectedTileDescriptor.tileColor
+        var number = selectedTileDescriptor.tileNumber
         var pluralSuffix = ""
         var pronoun = "it"
         if (number > 1) {

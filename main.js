@@ -99,7 +99,9 @@ function confirmation_modal_accept(event, args) {
 
 function confirmation_modal_cancel(event, args) {
   if (BrowserWindow.fromWebContents(event.sender) === confirmationWin) {
-    // win.webContents.send('log_message', `Cancel sent ${args.passBackObject}`)
+    if (args.passBackObject.action == "placeTile") {
+      cancelPlaceTile(args.passBackObject.player,args.passBackObject.row,args.passBackObject.tileDescriptor)
+    }
     confirmationWin.destroy()
     confirmationWin = null
   }
@@ -146,6 +148,31 @@ function confirmPlaceTile(player,row,selectedTile) {
     placeSelectedTileInRow(gameS,row, selectedTile)
 }
 
+function cancelPlaceTile(player,row,selectedTile) {
+    if (player != gameS.currentPlayerIndex) {
+      console.log("Received place tile callback for non-current player.")
+      return
+    }
+    highlightRowBasedOnSelectedTile(gameS)
+}
+
+function highlightRowBasedOnSelectedTile(gameState) {
+
+    if (gameState.selectedTile == null) {
+      win.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:[]})
+      return
+    }
+    let player = gameState.players[gameState.currentPlayerIndex]
+    var rowsToHighlight = []
+    for (var i=0; i < player.patternRows.length; i++) {
+      if (player.canPlaceTileInPatternRow({color:gameState.selectedTile.tileColor},i)) {
+        rowsToHighlight.push(i)
+      }
+    }
+    rowsToHighlight.push(player.patternRows.length)
+    win.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:rowsToHighlight})
+}
+
 function tile_slot_clicked(event, args) {
 
   var selectedArray = null
@@ -175,14 +202,22 @@ function tile_slot_clicked(event, args) {
 
       var selectedTiles = selectedArray.filter(currentElement => currentElement.color == color)
 
-      gameS.selectedTile = {tiles:selectedTiles,sourceArray:selectedArray,displayIndex:args.display}
+      var oldSelected = gameS.selectedTile
+      gameS.selectedTile = {tiles:selectedTiles, sourceArray:selectedArray, displayIndex:args.display,
+      tileColor:selectedTiles[0].color, tileNumber: selectedTiles.length}
+      if (oldSelected) {
+        win.webContents.send('highlight_tiles_in_display',{index:oldSelected.displayIndex,color:""});
+      }
+      win.webContents.send('highlight_tiles_in_display',
+      {index:gameS.selectedTile.displayIndex,color:gameS.selectedTile.tileColor});
+      highlightRowBasedOnSelectedTile(gameS)
       configureMainMessage(gameS)
   }
 }
 
 function pattern_row_clicked(event, args) {
     // win.webContents.send('log_message', "Selected pattern row " + args.row)
-    if (gameS.selectedTile == null || gameS.selectedTile.tiles.length == 0) {
+    if (gameS.selectedTile == null || gameS.selectedTile.tileNumber == 0) {
       return
     }
     if (args.player != gameS.currentPlayerIndex) {
@@ -199,13 +234,13 @@ function pattern_row_clicked(event, args) {
           color:'red'})
         return
       }
-      else if (player.patternRowContainsOtherColor(gameS.selectedTile.tiles[0].color, rowIndex)) {
+      else if (player.patternRowContainsOtherColor(gameS.selectedTile.tileColor, rowIndex)) {
         win.webContents.send('temporary_message',{message:
           "You cannot place tiles in a row that contains tiles of a different color.",
           color:'red'})
         return
       }
-      else if (player.wallRowContainsColor(gameS.selectedTile.tiles[0].color, rowIndex)) {
+      else if (player.wallRowContainsColor(gameS.selectedTile.tileColor, rowIndex)) {
         win.webContents.send('temporary_message',{message:
           "The wall tile in this row of that color has already been filled.",
           color:'red'})
@@ -213,8 +248,8 @@ function pattern_row_clicked(event, args) {
       }
     }
 
-    var tileColor = gameS.selectedTile.tiles[0].color
-    var tileNumber = gameS.selectedTile.tiles.length
+    var tileColor = gameS.selectedTile.tileColor
+    var tileNumber = gameS.selectedTile.tileNumber
     var displayName = ""
 
     var sourceDisplay = ""
@@ -244,6 +279,8 @@ function pattern_row_clicked(event, args) {
     if (gameS.selectedTile.displayIndex == "center" && (gameS.centerDisplay.findIndex((e) => e.first === true) >= 0)) {
       message += " You will also take the first player tile, which will be placed in the discard line."
     }
+
+    win.webContents.send('highlight_pattern_rows',{player:gameS.currentPlayerIndex,rows:[args.row]})
 
     showConfirmationModal(message,
       {player:gameS.currentPlayerIndex,action:"placeTile",row:args.row,tileDescriptor:gameS.selectedTile},{acceptText:"Yes"})
@@ -368,8 +405,8 @@ function configureMainMessage(gameState) {
     `Player ${gameState.currentPlayerIndex + 1} select a tile from the displays on the top.`)
   }
   else {
-    var message = `Player ${gameState.currentPlayerIndex + 1} you have selected ${gameState.selectedTile.tiles.length} ${gameState.selectedTile.tiles[0].color} tile`
-    if (gameState.selectedTile.tiles.length > 1) {
+    var message = `Player ${gameState.currentPlayerIndex + 1} you have selected ${gameState.selectedTile.tileNumber} ${gameState.selectedTile.tileColor} tile`
+    if (gameState.selectedTile.tileNumber > 1) {
       message += "s"
     }
     if (gameState.selectedTile.sourceArray === gameState.centerDisplay) {

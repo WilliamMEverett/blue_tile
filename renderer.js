@@ -3,6 +3,8 @@
 function init() {
 
   ipcRenderer.on('configure_tile_displays', configure_tile_displays)
+  ipcRenderer.on('highlight_tiles_in_display', highlight_tiles_in_display)
+  ipcRenderer.on('highlight_pattern_rows', highlight_pattern_rows)
   ipcRenderer.on('configure_player', configure_player)
   ipcRenderer.on('select_player', select_player)
   ipcRenderer.on('set_number_factory_displays', set_number_factory_displays)
@@ -29,14 +31,12 @@ function init() {
 
 function configure_tile_displays(event, arg) {
     var selectedDisplay = null
-    var totalDisplays = 0
     if (arg.index == "center") {
       selectedDisplay = document.getElementById('factory_display_center')
     }
     else if (arg.index != null && !Number.isNaN(arg.index)) {
       let nl = document.getElementById('factory_display_table').querySelectorAll('.factory_display')
       let arrFromList = Array.prototype.slice.call(nl);
-      totalDisplays = arrFromList.length
       if (arg.index < arrFromList.length) {
         selectedDisplay = arrFromList[arg.index]
       }
@@ -53,7 +53,8 @@ function configure_tile_displays(event, arg) {
       while (slot.firstChild) {
         slot.removeChild(slot.firstChild);
       }
-      slot.style.backgroundColor = 'white'
+      slot.style.backgroundColor = null
+      slot.style.outline = null
 
       if (i < arg.tiles.length) {
         slot.style.backgroundColor = arg.tiles[i].color
@@ -63,6 +64,67 @@ function configure_tile_displays(event, arg) {
         }
       }
     }
+}
+
+function highlight_tiles_in_display(event, arg) {
+  var selectedDisplay = null
+  if (arg.index == "center") {
+    selectedDisplay = document.getElementById('factory_display_center')
+  }
+  else if (arg.index != null && !Number.isNaN(arg.index)) {
+    let nl = document.getElementById('factory_display_table').querySelectorAll('.factory_display')
+    let arrFromList = Array.prototype.slice.call(nl);
+    if (arg.index < arrFromList.length) {
+      selectedDisplay = arrFromList[arg.index]
+    }
+  }
+
+  if (!selectedDisplay) {
+    return
+  }
+
+  let nl = selectedDisplay.querySelectorAll('.factory_display_slot')
+  let arrFromList = Array.prototype.slice.call(nl);
+  for (var i=0; i < arrFromList.length; i++) {
+    let slot = arrFromList[i]
+    if (slot.style.backgroundColor && slot.style.backgroundColor == arg.color) {
+      slot.style.outline = 'solid gold 2px'
+    }
+    else {
+      slot.style.outline = null
+    }
+  }
+}
+
+function highlight_pattern_rows(event, arg) {
+  log_message(null,"highlighting rows: " + arg.player + " - " + arg.rows.join(","))
+  let playerBoardsElement = document.getElementById('playerBoards')
+  let playerBoardNodes = playerBoardsElement.querySelectorAll('.player_board')
+  if (arg.player >= playerBoardNodes.length) {
+    return
+  }
+  var playerPanel = playerBoardNodes.item(arg.player)
+
+  var patternRows = playerPanel.querySelector('.player_pattern_rows').querySelectorAll('.pattern_row')
+  patternRows.forEach((e,i) => {
+
+    if (arg.rows && (arg.rows.findIndex(e => e == i) >= 0)) {
+      log_message(null,"should highlight row " + i)
+        e.style.outline = "solid #80FF80 1px"
+    }
+    else {
+        e.style.outline = null
+    }
+  })
+
+  var overflowDisplay = playerPanel.querySelector('.player_discard')
+  if (arg.rows && (arg.rows.findIndex(e => e >= patternRows.length) >= 0)) {
+      overflowDisplay.style.outline = "solid #80FF80 1px"
+  }
+  else {
+      overflowDisplay.style.outline = null
+  }
+
 }
 
 function configure_player(event, arg) {
@@ -80,6 +142,7 @@ function configure_player(event, arg) {
   var patternRows = playerBoardNodes.item(arg.index).querySelector('.player_pattern_rows')
   let rowsArray = Array.prototype.slice.call(patternRows.querySelectorAll('.pattern_row'))
   for (var i=0; i < rowsArray.length; i++) {
+    rowsArray[i].style.outline = null
     var cellsArray = Array.prototype.slice.call(rowsArray[i].querySelectorAll('.player_pattern_slot'))
     for (var j=0; j< cellsArray.length; j++) {
       var color = 'white'
@@ -106,6 +169,7 @@ function configure_player(event, arg) {
   }
 
   var overflowDisplay = playerBoardNodes.item(arg.index).querySelector('.player_discard')
+  overflowDisplay.style.outline = null
   let overflowHeaders = Array.prototype.slice.call(overflowDisplay.querySelectorAll('.player_discard_penalty'))
   overflowHeaders.forEach((e,i) => {
     if (e.textContent.trim().length > 0) {
