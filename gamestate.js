@@ -44,7 +44,7 @@ function _getDefaultGameState() {
         newPlayer.playerNumber = i
         this.players.push(newPlayer)
       }
-      this.currentPlayerIndex = 0
+      this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
       this.currentRound = 1
 
     }
