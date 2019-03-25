@@ -258,6 +258,9 @@ function _getDefaultGameState() {
         }
         var colorMap = new Map()
         e.forEach( (t,j) => {
+          if (t.first) {
+            return
+          }
           var existing = colorMap.get(t.color)
           if (!existing) {
             existing = 0
@@ -272,6 +275,9 @@ function _getDefaultGameState() {
 
       var colorMap = new Map()
       this.centerDisplay.forEach( (t) => {
+        if (t.first) {
+          return
+        }
         var existing = colorMap.get(t.color)
         if (!existing) {
           existing = 0

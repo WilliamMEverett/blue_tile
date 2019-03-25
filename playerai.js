@@ -75,19 +75,19 @@ class PlayerAI {
     return moves
   }
 
-  rankingFirstTilePenalty() {
+  rankingFirstTilePenalty(player, gameState) {
     return -1
   }
 
-  rankingDiscardPenalty(number) {
+  rankingDiscardPenalty(number, player, gameState) {
     return -2*number
   }
 
-  rankingFinishRowBonus(rowIndex) {
-    return 10
+  rankingFinishRowBonus(rowIndex, player, gameState) {
+    return 9 + player.patternRowSize[rowIndex]
   }
 
-  rankingPlaceTilesInRowBonus(number, rowIndex) {
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState) {
     return 2*number
   }
 
@@ -99,19 +99,19 @@ class PlayerAI {
       var tilesPlaced = move.tileDescriptor.tileNumber
       if (tilesOverflow > 0) {
         tilesPlaced -= tilesOverflow
-        score += this.rankingDiscardPenalty(tilesOverflow)
+        score += this.rankingDiscardPenalty(tilesOverflow, player, gameState)
       }
-      score += this.rankingPlaceTilesInRowBonus(tilesPlaced,move.row)
+      score += this.rankingPlaceTilesInRowBonus(tilesPlaced, move.row, player, gameState)
 
       if (tilesOverflow >= 0) {
-        score += this.rankingFinishRowBonus(move.row)
+        score += this.rankingFinishRowBonus(move.row, player, gameState)
       }
     }
     else {
-      score += this.rankingDiscardPenalty(move.tileDescriptor.tileNumber)
+      score += this.rankingDiscardPenalty(move.tileDescriptor.tileNumber, player, gameState)
     }
     if (move.firstTile) {
-      score += this.firstTilePenalty()
+      score += this.firstTilePenalty(player, gameState)
     }
 
     return score

@@ -62,7 +62,13 @@ function _getDefaultPlayerObject () {
     }
 
     newPlayer.canPlaceTileInPatternRow = function(tile,row) {
+        if (tile.first) {
+          return false
+        }
         if (this.patternRows[row].length >= this.patternRowSize[row]) {
+          return false
+        }
+        if (this.wallPattern[row].indexOf(tile.color) < 0) {
           return false
         }
         if (this.wallRowContainsColor(tile.color,row)) {

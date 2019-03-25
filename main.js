@@ -383,7 +383,7 @@ function nextPlayerStart(gameState) {
       configureMainMessage(gameState)
     }
     else {
-      var move = player.playerAI.moveForGamestate(player,gameState)
+      var move = player.playerAI.moveForGamestate(player.deepCopy(),gameState.deepCopy())
       if (move == null) {
         console.log("Error: AI could not make move")
         win.webContents.send('log_message',"Error: AI could not make move");
