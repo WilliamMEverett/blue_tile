@@ -89,7 +89,14 @@ function _getDefaultGameState() {
           pronoun = "them"
         }
         var logMessage = "Player " + (this.currentPlayerIndex + 1) + " took " + number +
-        " " + color + " tile" + pluralSuffix
+        " " + color + " tile" + pluralSuffix + " from "
+        if (selectedTileDescriptor.displayIndex == 'center') {
+          logMessage += "the center display"
+        }
+        else {
+          logMessage += `display #${selectedTileDescriptor.displayIndex + 1}`
+        }
+
         if (row < this.players[this.currentPlayerIndex].patternRows.length) {
           logMessage += " and placed " + pronoun + " in row " + (row + 1) + "."
         }

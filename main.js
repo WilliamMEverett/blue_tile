@@ -68,7 +68,7 @@ app.on('activate', () => {
 function renderer_initialized(event, args) {
 
   gameS = GameState.getDefaultGameState()
-  gameS.initializeBoard(2)
+  gameS.initializeBoard(4)
 
   win.webContents.send('set_number_factory_displays',gameS.numberOfDisplays)
   win.webContents.send('set_number_players',gameS.players.length)
@@ -129,7 +129,7 @@ function showConfirmationModal(text, passBackObject, options) {
   confirmationWin.loadFile('confirmation_modal.html')
   confirmationWin.on('ready-to-show', () => {
       confirmationWin.webContents.send('configure_confirmation_modal', info)
-      confirmationWin.show()
+      setTimeout(function() {confirmationWin.show()},10)
   })
 
   confirmationWin.on('closed', (e) => {
@@ -318,7 +318,13 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
       win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
       win.webContents.send('configure_player', {index:gameState.currentPlayerIndex,player:gameState.players[gameState.currentPlayerIndex]})
 
-      prepareForNextPlayer(gameState)
+      if (gameState.players[gameState.currentPlayerIndex].computerPlayer) {
+        setTimeout(function () { prepareForNextPlayer(gameState) },3000)
+      }
+      else {
+        prepareForNextPlayer(gameState)
+      }
+
 
     }
     else {
@@ -346,6 +352,8 @@ function performWallTiling(gameState) {
     let nextFirstPlayer = gameState.nextFirstPlayer()
     let messages = gameState.performWallTiling()
     messages.forEach(e => win.webContents.send('log_message', e))
+
+    // win.webContents.send('log_message', `Tiles:${gameState.tileArray.length} Discard:${gameState.discardedTiles.length}`)
 
     if (gameState.gameIsEnded() === true) {
       performEndOfGame(gameState)
