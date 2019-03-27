@@ -7,10 +7,13 @@ const PlayerAI = require('./playerai');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
+let gameConfigureWindow
+
+var currentGameSetup
 var gameS
 var confirmationWin
 
-function createWindow () {
+function createGameWindow () {
   // Create the browser window.
   win = new BrowserWindow({ width: 1200, height: 800 })
   // win.on('ready-to-show', () => {
@@ -31,7 +34,24 @@ function createWindow () {
     // when you should delete the corresponding element.
     win = null
   })
+}
 
+function createGameSetupWindow() {
+  gameConfigureWindow = new BrowserWindow({ width: 400, height: 400, show: false  })
+
+  gameConfigureWindow.on('closed', () => {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    gameConfigureWindow = null
+  })
+
+  gameConfigureWindow.on('ready-to-show', () => {
+      gameConfigureWindow.webContents.send('configure_game_start_mode', {gameConfiguration:currentGameSetup})
+      setTimeout(function() {gameConfigureWindow.show()},10)
+  })
+
+  gameConfigureWindow.loadFile('game_configure.html')
 }
 
 // This method will be called when Electron has finished
@@ -44,8 +64,18 @@ app.on('ready', () => {
     ipcMain.on('pattern_row_clicked', pattern_row_clicked)
     ipcMain.on('confirmation_modal_cancel', confirmation_modal_cancel)
     ipcMain.on('confirmation_modal_accept', confirmation_modal_accept)
+    ipcMain.on('game_start_confirm', game_start_confirm)
+    ipcMain.on('game_start_cancel', game_start_cancel)
 
-    createWindow()
+    currentGameSetup = new Object()
+    currentGameSetup.players = []
+    currentGameSetup.aiChoices = PlayerAI.getAllAINames()
+    currentGameSetup.players.push({type:'human',aiType:currentGameSetup.aiChoices[0]})
+    currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
+    currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
+    currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
+
+    createGameSetupWindow()
 })
 
 // Quit when all windows are closed.
@@ -60,10 +90,18 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (win === null) {
-    createWindow()
+  if (win === null && gameConfigureWindow === null) {
+    createGameSetupWindow()
   }
 })
+
+function game_start_confirm(event, args) {
+
+}
+
+function game_start_cancel(event, args) {
+
+}
 
 function renderer_initialized(event, args) {
 

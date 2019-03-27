@@ -1,0 +1,77 @@
+html {
+    margin: 5px 5px 5px 5px;
+    height: calc(100% - 10px);
+    width: calc(100% - 10px);
+    outline: solid black 5px;
+    background-color: #F8F8F8;
+}
+
+body {
+  height: 95%;
+  margin: 5px;
+  width: calc(100% - 25px);
+}
+
+.main_body {
+  margin: 7px;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+#player_holder {
+  flex: 1 1 auto;
+  height: calc(100% - 50px);
+  margin: 5px;
+  overflow-y: auto;
+  text-align: center;
+/*  outline: dashed blue 1px; */
+/*  display: flex;
+  flex-direction: column; */
+  justify-content: center;
+  font: 15px "tahoma";
+}
+
+#player_name_column {
+  width: 100px;
+}
+
+#player_type_column {
+  width: 150px;
+}
+
+#player_ai_column {
+  width: 150px;
+}
+
+.player_configure_row {
+  height: 50px;
+}
+
+#button_holder {
+  flex: 0 0 auto;
+  height: 50px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+#cancel_button {
+  flex: 0 0 auto;
+  width: 75px;
+  font: 18px "tahoma";
+  font-weight: bold;
+  color: #A00000;
+}
+
+#start_button {
+  flex: 0 0 auto;
+  width: 75px;
+  font: 18px "tahoma";
+  font-weight: bold;
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>New Game</title>
+  <link rel="stylesheet" type="text/css" href="game_configure.css" />
+</head>
+<body>
+  <div class="main_body">
+    <div id= "player_holder">
+      <table><tr><td id="player_name_column"></td><td id="player_type_column">Type</td><td id="player_ai_column">AI</td>
+      </tr>
+      <tr class="player_configure_row"><td class="player_name">Player 1</td>
+        <td><select class="player_type"></select></td>
+        <td><select class="player_ai"></select></td>
+      </tr>
+      <tr class="player_configure_row">
+        <td class="player_name">Player 2</td>
+        <td><select class="player_type"></select></td>
+        <td><select class="player_ai"></select></td>
+      </tr>
+      <tr class="player_configure_row">
+        <td class="player_name">Player 3</td>
+        <td><select class="player_type"></select></td>
+        <td><select class="player_ai"></select></td>
+      </tr>
+      <tr class="player_configure_row">
+        <td class="player_name">Player 4</td>
+        <td><select class="player_type"></select></td>
+        <td><select class="player_ai"></select></td>
+      </tr>
+      </table>
+    </div>
+    <div id="button_holder">
+        <button id="cancel_button" type="button">Cancel</button>
+        <button id="start_button" type="button">Start</button>
+      </div>
+  </div>
+  <script>
+// You can also require other files to run in this process
+  require('./game_configure.js')
+  </script>
+</body>
+</html>

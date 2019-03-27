@@ -1,10 +1,28 @@
 
 module.exports = {
-  getDefaultPlayerAI: _getDefaultPlayerAI
+  getDefaultPlayerAI: _getDefaultPlayerAI,
+  getAllAINames: _getAllAINames,
+  getAINamed: _getAINamed
 }
 
 function _getDefaultPlayerAI() {
   return new PlayerAI()
+}
+
+function _getAllAINames() {
+  return ["standard"]
+}
+
+function _getAINamed(name) {
+  if (!name || name.length == 0) {
+    return _getDefaultPlayerAI()
+  }
+  else if (name.toLowerCase() == 'standard') {
+    return new PlayerAI()
+  }
+  else {
+    return null
+  }
 }
 
 class PlayerAI {
