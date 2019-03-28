@@ -1,5 +1,5 @@
 ﻿
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu } = require('electron')
 const Player = require('./player');
 const GameState = require('./gamestate');
 const PlayerAI = require('./playerai');
@@ -36,7 +36,11 @@ function createGameWindow () {
   })
 }
 
-function createGameSetupWindow() {
+function showGameSetupWindow() {
+  if (gameConfigureWindow != null) {
+    return
+  }
+
   gameConfigureWindow = new BrowserWindow({ width: 400, height: 400, show: false  })
 
   gameConfigureWindow.on('closed', () => {
@@ -76,7 +80,30 @@ app.on('ready', () => {
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
     currentGameSetup.randomizedPlayerOrder = true
 
-    createGameSetupWindow()
+    const menuTemplate = [
+      {
+        label: 'Electron',
+        submenu: [
+          {
+            label: 'New Game',
+            click: () => {
+                newGameMenu()
+            }
+          }, {
+            type: 'separator'
+          }, {
+            label: 'Quit',
+            click: () => {
+              quitGameMenu();
+            }
+          }
+        ]
+      }
+    ];
+    const menu = Menu.buildFromTemplate(menuTemplate);
+    Menu.setApplicationMenu(menu);
+
+    showGameSetupWindow()
 })
 
 // Quit when all windows are closed.
@@ -92,7 +119,7 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (win === null && gameConfigureWindow === null) {
-    createGameSetupWindow()
+    showGameSetupWindow()
   }
 })
 
@@ -117,6 +144,14 @@ function game_start_cancel(event, args) {
 function renderer_initialized(event, args) {
 
   initialConfigurationOfGameWindow(gameS)
+}
+
+function newGameMenu() {
+  showGameSetupWindow()
+}
+
+function quitGameMenu() {
+  app.quit();
 }
 
 function confirmation_modal_accept(event, args) {
