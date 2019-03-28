@@ -38,7 +38,7 @@ function _getDefaultGameState() {
       return newObject
     }
 
-    gameState.initializeBoard = function(numberPlayers) {
+    gameState.initializeBoard = function(gameConfiguration) {
       this.discardedTiles.length = 0
       this.tileArray.length = 0
       this.factoryDisplays.length = 0
@@ -57,18 +57,24 @@ function _getDefaultGameState() {
       })
 
       shuffleArray(this.tileArray)
-      this.numberOfDisplays = displayNumberLookup[''+numberPlayers]
+      this.numberOfDisplays = displayNumberLookup[''+ gameConfiguration.players.length]
       this.assignTilesToDisplay()
-      for (var i =0; i< numberPlayers; i++) {
+      for (var i =0; i< gameConfiguration.players.length; i++) {
         let newPlayer = Player.getDefaultPlayerObject()
         newPlayer.playerNumber = i
-        if (i > 0) {
+
+        if (gameConfiguration.players[i].type == 'computer') {
           newPlayer.computerPlayer = true
-          newPlayer.playerAI = PlayerAI.getDefaultPlayerAI()
+          newPlayer.playerAI = PlayerAI.getAINamed(gameConfiguration.players[i].aiType)
         }
         this.players.push(newPlayer)
       }
-      this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
+      if (gameConfiguration.randomizedPlayerOrder) {
+        this.currentPlayerIndex = Math.floor(Math.random() * this.players.length)
+      }
+      else {
+        this.currentPlayerIndex = 0
+      }
       this.currentRound = 1
 
     }

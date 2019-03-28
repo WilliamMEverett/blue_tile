@@ -14,6 +14,8 @@ function init() {
     nl2.forEach( (element) => {
         element.onchange = changeEventHandler
     })
+
+    document.getElementById('randomized_player_order').onchange = changeEventHandler
 }
 
 function configure_game_start_mode(event, args) {
@@ -22,8 +24,12 @@ function configure_game_start_mode(event, args) {
 }
 
 function setupUI(gameC) {
-    let nl2 = document.querySelectorAll('.player_configure_row')
-    nl2.forEach( (e,i) => {
+
+  let randomizedCheckbox = document.getElementById('randomized_player_order')
+  randomizedCheckbox.checked = gameC.randomizedPlayerOrder
+
+  let nl2 = document.querySelectorAll('.player_configure_row')
+  nl2.forEach( (e,i) => {
       if (i <= gameC.players.length) {
         e.hidden = false
         var pType = e.querySelector('.player_type')
@@ -49,13 +55,16 @@ function setupUI(gameC) {
 
         var expectedValue = 'none'
         if ( i < gameC.players.length && gameC.players[i].type) {
-          expectedValue = gameC.players.type
+          expectedValue = gameC.players[i].type
         }
+        var selectedIndex = -1
         for (var j=0; j < pType.options.length; j++) {
           if (pType.options[j].value == expectedValue) {
-            pType.options[j].selected = true
+            selectedIndex = j
           }
         }
+
+        pType.selectedIndex = selectedIndex
 
         var aiType = e.querySelector('.player_ai')
         while (aiType.hasChildNodes()) {
@@ -76,11 +85,14 @@ function setupUI(gameC) {
         })
 
         expectedValue = gameC.players[i].aiType
+        selectedIndex = -1
         for (var j=0; j < aiType.options.length; j++) {
           if (aiType.options[j].value == expectedValue) {
-            aiType.options[j].selected = true
+            selectedIndex = j
           }
         }
+
+        aiType.selectedIndex = selectedIndex
       }
       else {
         e.hidden = true
@@ -89,6 +101,13 @@ function setupUI(gameC) {
 }
 
 function changeEventHandler(event) {
+  if (event.currentTarget.id == 'randomized_player_order') {
+    gameConfiguration.randomizedPlayerOrder = event.currentTarget.checked
+    setupUI(gameConfiguration)
+    return
+  }
+
+
   let nl2 = document.querySelectorAll('.player_configure_row')
   var row = -1
   var value = ''
@@ -102,7 +121,9 @@ function changeEventHandler(event) {
       else if (event.currentTarget.className.match(/\bplayer_ai\b/i)) {
           field = 'aiType'
       }
-      value = event.currentTarget.value
+      if (event.currentTarget.selectedIndex >= 0) {
+        value = event.currentTarget.item(event.currentTarget.selectedIndex).value
+      }
     }
   })
   if (row >= 0) {
@@ -113,7 +134,7 @@ function changeEventHandler(event) {
     }
     else if (field == 'type' && value == 'none') {
       if (row > 0 && row == gameConfiguration.players.length - 1) {
-        gameConfiguration.pop()
+        gameConfiguration.players.pop()
       }
     }
     else {

@@ -74,6 +74,7 @@ app.on('ready', () => {
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
+    currentGameSetup.randomizedPlayerOrder = true
 
     createGameSetupWindow()
 })
@@ -96,31 +97,26 @@ app.on('activate', () => {
 })
 
 function game_start_confirm(event, args) {
+    currentGameSetup = args.gameConfiguration
+    gameS = GameState.getDefaultGameState()
+    gameS.initializeBoard(currentGameSetup)
 
+    if (win == null) {
+      createGameWindow()
+    }
+    else {
+      initialConfigurationOfGameWindow(gameS)
+    }
+    gameConfigureWindow.close()
 }
 
 function game_start_cancel(event, args) {
-
+  gameConfigureWindow.close()
 }
 
 function renderer_initialized(event, args) {
 
-  gameS = GameState.getDefaultGameState()
-  gameS.initializeBoard(4)
-
-  win.webContents.send('set_number_factory_displays',gameS.numberOfDisplays)
-  win.webContents.send('set_number_players',gameS.players.length)
-  for (var i=0; i< gameS.factoryDisplays.length; i++) {
-    win.webContents.send('configure_tile_displays',{index:i,tiles:gameS.factoryDisplays[i]})
-  }
-  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameS.centerDisplay})
-
-  for (var i=0; i< gameS.players.length; i++) {
-    win.webContents.send('configure_player', {index:i,player:gameS.players[i]})
-  }
-
-  win.webContents.send('log_message', `Round ${gameS.currentRound}: Player ${(gameS.currentPlayerIndex + 1)} will start`)
-  nextPlayerStart(gameS)
+  initialConfigurationOfGameWindow(gameS)
 }
 
 function confirmation_modal_accept(event, args) {
@@ -177,6 +173,26 @@ function showConfirmationModal(text, passBackObject, options) {
       // console.log("closed received for not current window")
     }
   })
+}
+
+function initialConfigurationOfGameWindow(gameState) {
+  if (win == null) {
+    return
+  }
+
+  win.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
+  win.webContents.send('set_number_players',gameState.players.length)
+  for (var i=0; i< gameState.factoryDisplays.length; i++) {
+    win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+  }
+  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+
+  for (var i=0; i< gameState.players.length; i++) {
+    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+  }
+
+  win.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
+  nextPlayerStart(gameState)
 }
 
 function confirmPlaceTile(player,row,selectedTile) {
