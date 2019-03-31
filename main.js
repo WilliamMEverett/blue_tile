@@ -68,6 +68,12 @@ function showGameSetupWindow() {
   gameConfigureWindow.loadFile('game_configure.html')
 }
 
+app.on('before-quit', () => {
+  if (gameS != null) {
+    gameS.forceEnd = true
+  }
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
