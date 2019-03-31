@@ -524,6 +524,7 @@ function nextPlayerStart(gameState) {
       configureMainMessage(gameState)
     }
     else {
+      configureMainMessage(gameState)
       var move = player.playerAI.moveForGamestate(player.deepCopy(),gameState.deepCopy())
       if (move == null) {
         console.log("Error: AI could not make move")
@@ -564,7 +565,11 @@ function performEndOfGame(gameState) {
 }
 
 function configureMainMessage(gameState) {
-  if (gameState.selectedTile == null) {
+  if (gameState.currentPlayerIndex >= 0 && gameState.players[gameState.currentPlayerIndex].computerPlayer) {
+    win.webContents.send('main_message',
+    `Player ${gameState.currentPlayerIndex + 1} (computer player) is moving.`)
+  }
+  else if (gameState.selectedTile == null) {
     win.webContents.send('main_message',
     `Player ${gameState.currentPlayerIndex + 1} select a tile from the displays on the top.`)
   }
