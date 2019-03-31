@@ -6,7 +6,7 @@ const PlayerAI = require('./playerai');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let gamePlayWindow
 let gameConfigureWindow
 
 var currentGameSetup
@@ -15,28 +15,28 @@ var confirmationWin
 
 function createGameWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 1200, height: 800 })
-  // win.on('ready-to-show', () => {
+  gamePlayWindow = new BrowserWindow({ width: 1200, height: 800 })
+  // gamePlayWindow.on('ready-to-show', () => {
   //     console.log('Did finish load')
-  //     win.show()
+  //     gamePlayWindow.show()
   // })
   // and load the index.html of the app.
-  win.loadFile('index.html')
+  gamePlayWindow.loadFile('index.html')
 
 
   // Open the DevTools.
-  //win.webContents.openDevTools()
+  //gamePlayWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  win.on('closed', () => {
+  gamePlayWindow.on('closed', () => {
 
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    win = null
+    gamePlayWindow = null
   })
 
-  win.on('close', (e) => {
+  gamePlayWindow.on('close', (e) => {
     if (gameS != null && !gameS.gameIsEnded()) {
       e.preventDefault()
       showConfirmationModal("Are you sure you want to quit? Your current game is not finished",
@@ -128,7 +128,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (win === null && gameConfigureWindow === null) {
+  if (gamePlayWindow === null && gameConfigureWindow === null) {
     showGameSetupWindow()
   }
 })
@@ -138,7 +138,7 @@ function game_start_confirm(event, args) {
     gameS = GameState.getDefaultGameState()
     gameS.initializeBoard(currentGameSetup)
 
-    if (win == null) {
+    if (gamePlayWindow == null) {
       createGameWindow()
     }
     else {
@@ -157,7 +157,7 @@ function renderer_initialized(event, args) {
 }
 
 function newGameMenu() {
-  if (win != null && gameS != null && !gameS.gameIsEnded()) {
+  if (gamePlayWindow != null && gameS != null && !gameS.gameIsEnded()) {
     showConfirmationModal("Are you sure you want to start a new game? Your current game is not finished",
                       {action:"newGame"},{acceptText:"Yes"})
   }
@@ -167,7 +167,7 @@ function newGameMenu() {
 }
 
 function quitGameMenu() {
-  if (win != null && gameS != null && !gameS.gameIsEnded()) {
+  if (gamePlayWindow != null && gameS != null && !gameS.gameIsEnded()) {
     showConfirmationModal("Are you sure you want to quit? Your current game is not finished",
                       {action:"quitGame"},{acceptText:"Yes"})
   }
@@ -194,7 +194,7 @@ function confirmation_modal_accept(event, args) {
       if (gameS != null) {
         gameS.forceEnd = true
       }
-      setTimeout(()=>{win.close()}, 0)
+      setTimeout(()=>{gamePlayWindow.close()}, 0)
     }
 
     confirmationWin.destroy()
@@ -232,7 +232,7 @@ function showConfirmationModal(text, passBackObject, options) {
     info.cancelText = options.cancelText
   }
 
-  confirmationWin = new BrowserWindow({parent: win, modal: true, width: 300, height: 300, show: false })
+  confirmationWin = new BrowserWindow({parent: gamePlayWindow, modal: true, width: 300, height: 300, show: false })
   confirmationWin.loadFile('confirmation_modal.html')
   confirmationWin.on('ready-to-show', () => {
       confirmationWin.webContents.send('configure_confirmation_modal', info)
@@ -249,22 +249,22 @@ function showConfirmationModal(text, passBackObject, options) {
 }
 
 function initialConfigurationOfGameWindow(gameState) {
-  if (win == null) {
+  if (gamePlayWindow == null) {
     return
   }
 
-  win.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
-  win.webContents.send('set_number_players',gameState.players.length)
+  gamePlayWindow.webContents.send('set_number_factory_displays',gameState.numberOfDisplays)
+  gamePlayWindow.webContents.send('set_number_players',gameState.players.length)
   for (var i=0; i< gameState.factoryDisplays.length; i++) {
-    win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+    gamePlayWindow.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
   }
-  win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+  gamePlayWindow.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
 
   for (var i=0; i< gameState.players.length; i++) {
-    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+    gamePlayWindow.webContents.send('configure_player', {index:i,player:gameState.players[i]})
   }
 
-  win.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
+  gamePlayWindow.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
   nextPlayerStart(gameState)
 }
 
@@ -287,7 +287,7 @@ function cancelPlaceTile(player,row,selectedTile) {
 function highlightRowBasedOnSelectedTile(gameState) {
 
     if (gameState.selectedTile == null) {
-      win.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:[]})
+      gamePlayWindow.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:[]})
       return
     }
     let player = gameState.players[gameState.currentPlayerIndex]
@@ -298,7 +298,7 @@ function highlightRowBasedOnSelectedTile(gameState) {
       }
     }
     rowsToHighlight.push(player.patternRows.length)
-    win.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:rowsToHighlight})
+    gamePlayWindow.webContents.send('highlight_pattern_rows',{player:gameState.currentPlayerIndex,rows:rowsToHighlight})
 }
 
 function tile_slot_clicked(event, args) {
@@ -315,18 +315,18 @@ function tile_slot_clicked(event, args) {
     selectedArray = gameS.factoryDisplays[args.display]
   }
   if (selectedArray == null || args.slot < 0) {
-    // win.webContents.send('log_message', "Error")
+    // gamePlayWindow.webContents.send('log_message', "Error")
     return
   }
   if (args.slot >= selectedArray.length) {
-      // win.webContents.send('log_message', "Clicked empty holder")
+      // gamePlayWindow.webContents.send('log_message', "Clicked empty holder")
       return
   }
   else {
       let color = selectedArray[args.slot].color
       if (selectedArray[args.slot].first) {
         selectedTile = null
-        win.webContents.send('temporary_message', {message:"You cannot select the first player tile. " +
+        gamePlayWindow.webContents.send('temporary_message', {message:"You cannot select the first player tile. " +
         "You will, however, take it if you take any other tile from the center.",color:"red"})
         configureMainMessage(gameS)
         return
@@ -338,9 +338,9 @@ function tile_slot_clicked(event, args) {
       gameS.selectedTile = {tiles:selectedTiles, sourceArray:selectedArray, displayIndex:args.display,
       tileColor:selectedTiles[0].color, tileNumber: selectedTiles.length}
       if (oldSelected) {
-        win.webContents.send('highlight_tiles_in_display',{index:oldSelected.displayIndex,color:""});
+        gamePlayWindow.webContents.send('highlight_tiles_in_display',{index:oldSelected.displayIndex,color:""});
       }
-      win.webContents.send('highlight_tiles_in_display',
+      gamePlayWindow.webContents.send('highlight_tiles_in_display',
       {index:gameS.selectedTile.displayIndex,color:gameS.selectedTile.tileColor});
       highlightRowBasedOnSelectedTile(gameS)
       configureMainMessage(gameS)
@@ -352,12 +352,12 @@ function pattern_row_clicked(event, args) {
       return
     }
 
-    // win.webContents.send('log_message', "Selected pattern row " + args.row)
+    // gamePlayWindow.webContents.send('log_message', "Selected pattern row " + args.row)
     if (gameS.selectedTile == null || gameS.selectedTile.tileNumber == 0) {
       return
     }
     if (args.player != gameS.currentPlayerIndex) {
-      win.webContents.send('temporary_message',{message:
+      gamePlayWindow.webContents.send('temporary_message',{message:
         "That is not the current player. The current player is #" + (gameS.currentPlayerIndex + 1),
         color:'red'})
       return
@@ -366,18 +366,18 @@ function pattern_row_clicked(event, args) {
     let rowIndex = args.row
     if (rowIndex < player.patternRows.length) {
       if (player.patternRows[rowIndex].length >= player.patternRowSize[rowIndex]) {
-        win.webContents.send('temporary_message',{message:"This row is already full.",
+        gamePlayWindow.webContents.send('temporary_message',{message:"This row is already full.",
           color:'red'})
         return
       }
       else if (player.patternRowContainsOtherColor(gameS.selectedTile.tileColor, rowIndex)) {
-        win.webContents.send('temporary_message',{message:
+        gamePlayWindow.webContents.send('temporary_message',{message:
           "You cannot place tiles in a row that contains tiles of a different color.",
           color:'red'})
         return
       }
       else if (player.wallRowContainsColor(gameS.selectedTile.tileColor, rowIndex)) {
-        win.webContents.send('temporary_message',{message:
+        gamePlayWindow.webContents.send('temporary_message',{message:
           "The wall tile in this row of that color has already been filled.",
           color:'red'})
         return
@@ -416,7 +416,7 @@ function pattern_row_clicked(event, args) {
       message += " You will also take the first player tile, which will be placed in the discard line."
     }
 
-    win.webContents.send('highlight_pattern_rows',{player:gameS.currentPlayerIndex,rows:[args.row]})
+    gamePlayWindow.webContents.send('highlight_pattern_rows',{player:gameS.currentPlayerIndex,rows:[args.row]})
 
     showConfirmationModal(message,
       {player:gameS.currentPlayerIndex,action:"placeTile",row:args.row,tileDescriptor:gameS.selectedTile},{acceptText:"Yes"})
@@ -437,13 +437,13 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
   let result = gameState.placeSelectedTileInRow(row, selectedTileDescriptor)
     if (result.success) {
 
-      win.webContents.send('log_message', result.message)
+      gamePlayWindow.webContents.send('log_message', result.message)
 
       for (var i=0; i< gameState.factoryDisplays.length; i++) {
-        win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+        gamePlayWindow.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
       }
-      win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
-      win.webContents.send('configure_player', {index:gameState.currentPlayerIndex,player:gameState.players[gameState.currentPlayerIndex]})
+      gamePlayWindow.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+      gamePlayWindow.webContents.send('configure_player', {index:gameState.currentPlayerIndex,player:gameState.players[gameState.currentPlayerIndex]})
 
       if (gameState.players[gameState.currentPlayerIndex].computerPlayer) {
         setTimeout(function () { prepareForNextPlayer(gameState) },3000)
@@ -455,20 +455,20 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
 
     }
     else {
-      win.webContents.send('temporary_message',{message:result.message,color:'red'})
+      gamePlayWindow.webContents.send('temporary_message',{message:result.message,color:'red'})
     }
 }
 
 function prepareForNextPlayer(gameState) {
-    if (win == null) {
+    if (gamePlayWindow == null) {
       return
     }
 
-    win.webContents.send('select_player',{index:-1})
+    gamePlayWindow.webContents.send('select_player',{index:-1})
     let res = gameState.prepareForNextPlayer()
     if (res.roundEnd === true) {
-      win.webContents.send('log_message', res.message)
-      win.webContents.send('main_message', "Wall tiling . . .")
+      gamePlayWindow.webContents.send('log_message', res.message)
+      gamePlayWindow.webContents.send('main_message', "Wall tiling . . .")
       setTimeout(function() {performWallTiling(gameState)}, 1000)
     }
     else {
@@ -478,15 +478,15 @@ function prepareForNextPlayer(gameState) {
 }
 
 function performWallTiling(gameState) {
-    if (win == null) {
+    if (gamePlayWindow == null) {
       return
     }
 
     let nextFirstPlayer = gameState.nextFirstPlayer()
     let messages = gameState.performWallTiling()
-    messages.forEach(e => win.webContents.send('log_message', e))
+    messages.forEach(e => gamePlayWindow.webContents.send('log_message', e))
 
-    // win.webContents.send('log_message', `Tiles:${gameState.tileArray.length} Discard:${gameState.discardedTiles.length}`)
+    // gamePlayWindow.webContents.send('log_message', `Tiles:${gameState.tileArray.length} Discard:${gameState.discardedTiles.length}`)
 
     if (gameState.gameIsEnded() === true) {
       performEndOfGame(gameState)
@@ -503,15 +503,15 @@ function performWallTiling(gameState) {
       gameState.assignTilesToDisplay(gameState)
 
       for (var i=0; i< gameState.factoryDisplays.length; i++) {
-        win.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
+        gamePlayWindow.webContents.send('configure_tile_displays',{index:i,tiles:gameState.factoryDisplays[i]})
       }
-      win.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
+      gamePlayWindow.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
 
       for (var i=0; i< gameState.players.length; i++) {
-        win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+        gamePlayWindow.webContents.send('configure_player', {index:i,player:gameState.players[i]})
       }
 
-      win.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
+      gamePlayWindow.webContents.send('log_message', `Round ${gameState.currentRound}: Player ${(gameState.currentPlayerIndex + 1)} will start`)
 
       nextPlayerStart(gameState)
     }
@@ -520,7 +520,7 @@ function performWallTiling(gameState) {
 function nextPlayerStart(gameState) {
     var player = gameState.players[gameState.currentPlayerIndex]
     if (!player.computerPlayer) {
-      win.webContents.send('select_player',{index:gameState.currentPlayerIndex})
+      gamePlayWindow.webContents.send('select_player',{index:gameState.currentPlayerIndex})
       configureMainMessage(gameState)
     }
     else {
@@ -528,7 +528,7 @@ function nextPlayerStart(gameState) {
       var move = player.playerAI.moveForGamestate(player.deepCopy(),gameState.deepCopy())
       if (move == null) {
         console.log("Error: AI could not make move")
-        win.webContents.send('log_message',"Error: AI could not make move");
+        gamePlayWindow.webContents.send('log_message',"Error: AI could not make move");
       }
       else {
         placeSelectedTileInRow(gameState,move.row,move.tileDescriptor)
@@ -537,11 +537,11 @@ function nextPlayerStart(gameState) {
 }
 
 function performEndOfGame(gameState) {
-  win.webContents.send('log_message', "End of Game")
+  gamePlayWindow.webContents.send('log_message', "End of Game")
   let messages = gameState.calculateFinalBonusPoints()
-  messages.forEach(e => win.webContents.send('log_message', e))
+  messages.forEach(e => gamePlayWindow.webContents.send('log_message', e))
   for (var i=0; i< gameState.players.length; i++) {
-    win.webContents.send('configure_player', {index:i,player:gameState.players[i]})
+    gamePlayWindow.webContents.send('configure_player', {index:i,player:gameState.players[i]})
   }
 
   let winningPlayers = gameState.winningPlayers()
@@ -560,17 +560,17 @@ function performEndOfGame(gameState) {
     message = `Tie between players ${playerNumberString}.`
   }
 
-  win.webContents.send('log_message', message)
-  win.webContents.send('main_message', "Game Over. " + message)
+  gamePlayWindow.webContents.send('log_message', message)
+  gamePlayWindow.webContents.send('main_message', "Game Over. " + message)
 }
 
 function configureMainMessage(gameState) {
   if (gameState.currentPlayerIndex >= 0 && gameState.players[gameState.currentPlayerIndex].computerPlayer) {
-    win.webContents.send('main_message',
+    gamePlayWindow.webContents.send('main_message',
     `Player ${gameState.currentPlayerIndex + 1} (computer player) is moving.`)
   }
   else if (gameState.selectedTile == null) {
-    win.webContents.send('main_message',
+    gamePlayWindow.webContents.send('main_message',
     `Player ${gameState.currentPlayerIndex + 1} select a tile from the displays on the top.`)
   }
   else {
@@ -591,6 +591,6 @@ function configureMainMessage(gameState) {
       }
     }
     message += " Select a pattern row (or the discard line) to place the tiles."
-    win.webContents.send('main_message', message)
+    gamePlayWindow.webContents.send('main_message', message)
   }
 }
