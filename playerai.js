@@ -10,7 +10,7 @@ function _getDefaultPlayerAI() {
 }
 
 function _getAllAINames() {
-  return ["standard"]
+  return ["standard","random"]
 }
 
 function _getAINamed(name) {
@@ -19,6 +19,9 @@ function _getAINamed(name) {
   }
   else if (name.toLowerCase() == 'standard') {
     return new PlayerAI()
+  }
+  else if (name.toLowerCase() == 'random') {
+    return new RandomPlayerAI()
   }
   else {
     return null
@@ -139,5 +142,50 @@ class PlayerAI {
     return score
   }
 
+}
+
+class RandomPlayerAI extends PlayerAI {
+  getName() {
+    return "Random"
+  }
+
+  moveForGamestate(player,gameState) {
+
+    var movesToCheck = this.rankedMoves(this.allPossibleNonDiscardMoves(gameState,player),player,gameState)
+    if (movesToCheck.length == 0) {
+      movesToCheck = this.rankedMoves(this.allPossibleDiscardMoves(gameState,player),player,gameState)
+    }
+    if (movesToCheck.length == 0) {
+      return null
+    }
+
+    var topScore = Number.MIN_SAFE_INTEGER
+    movesToCheck.forEach( e => {
+      if (e.score > topScore) {
+        topScore = e.score
+      }
+    })
+
+    var topMoves = movesToCheck.filter( e => e.score >= (topScore - 3))
+    if (topMoves.length == 1) {
+      return topMoves[0]
+    }
+    else {
+      return topMoves[Math.floor(Math.random() * topMoves.length)]
+    }
+
+  }
+
+  rankingFinishRowBonus(rowIndex, player, gameState) {
+    return 2
+  }
+
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState) {
+    return 1*number
+  }
+
+  rankingFirstTilePenalty(player, gameState) {
+    return 0
+  }
 
 }
