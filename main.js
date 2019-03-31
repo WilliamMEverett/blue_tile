@@ -98,7 +98,7 @@ app.on('ready', () => {
 
     const menuTemplate = [
       {
-        label: 'Electron',
+        label: 'Blue Tile',
         submenu: [
           {
             label: 'New Game',

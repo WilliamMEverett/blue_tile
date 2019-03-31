@@ -10,7 +10,7 @@ function _getDefaultPlayerAI() {
 }
 
 function _getAllAINames() {
-  return ["standard","random"]
+  return ["standard","random","colors"]
 }
 
 function _getAINamed(name) {
@@ -22,6 +22,9 @@ function _getAINamed(name) {
   }
   else if (name.toLowerCase() == 'random') {
     return new RandomPlayerAI()
+  }
+  else if (name.toLowerCase() == 'colors') {
+    return new ColorsPlayerAI()
   }
   else {
     return null
@@ -100,19 +103,19 @@ class PlayerAI {
     return moves
   }
 
-  rankingFirstTilePenalty(player, gameState) {
+  rankingFirstTilePenalty(player, gameState, move) {
     return -1
   }
 
-  rankingDiscardPenalty(number, player, gameState) {
+  rankingDiscardPenalty(number, player, gameState, move) {
     return -2*number
   }
 
-  rankingFinishRowBonus(rowIndex, player, gameState) {
+  rankingFinishRowBonus(rowIndex, player, gameState, move) {
     return 9 + player.patternRowSize[rowIndex]
   }
 
-  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState) {
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move) {
     return 2*number
   }
 
@@ -124,19 +127,19 @@ class PlayerAI {
       var tilesPlaced = move.tileDescriptor.tileNumber
       if (tilesOverflow > 0) {
         tilesPlaced -= tilesOverflow
-        score += this.rankingDiscardPenalty(tilesOverflow, player, gameState)
+        score += this.rankingDiscardPenalty(tilesOverflow, player, gameState, move)
       }
-      score += this.rankingPlaceTilesInRowBonus(tilesPlaced, move.row, player, gameState)
+      score += this.rankingPlaceTilesInRowBonus(tilesPlaced, move.row, player, gameState, move)
 
       if (tilesOverflow >= 0) {
-        score += this.rankingFinishRowBonus(move.row, player, gameState)
+        score += this.rankingFinishRowBonus(move.row, player, gameState, move)
       }
     }
     else {
-      score += this.rankingDiscardPenalty(move.tileDescriptor.tileNumber, player, gameState)
+      score += this.rankingDiscardPenalty(move.tileDescriptor.tileNumber, player, gameState, move)
     }
     if (move.firstTile) {
-      score += this.firstTilePenalty(player, gameState)
+      score += this.firstTilePenalty(player, gameState, move)
     }
 
     return score
@@ -176,16 +179,69 @@ class RandomPlayerAI extends PlayerAI {
 
   }
 
-  rankingFinishRowBonus(rowIndex, player, gameState) {
+  rankingFinishRowBonus(rowIndex, player, gameState, move) {
     return 2
   }
 
-  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState) {
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move) {
     return 1*number
   }
 
-  rankingFirstTilePenalty(player, gameState) {
+  rankingFirstTilePenalty(player, gameState, move) {
     return 0
+  }
+
+}
+
+class ColorsPlayerAI extends PlayerAI {
+
+  getName() {
+    return "Colors"
+  }
+
+  rankingFinishRowBonus(rowIndex, player, gameState, move) {
+
+    //must finish up partly completed row so we can clear it out and put other color in
+    if (player.patternRows[rowIndex].length > 0) {
+        return 15 + player.patternRowSize[rowIndex]
+    }
+
+    var playerCopy = player.deepCopy()
+    playerCopy.performWallTiling({discardedTiles:[]})
+
+    var numberOfSameColor = playerCopy.wallTiles.reduce((accumulator, currentValue, index) => {
+        if (playerCopy.wallRowContainsColor(move.tileDescriptor.tileColor, index)) {
+          return accumulator + 1
+        }
+        else {
+          return accumulator
+        }
+
+    },0)
+
+    return 2 + numberOfSameColor*4
+  }
+
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move) {
+
+    var playerCopy = player.deepCopy()
+    playerCopy.performWallTiling({discardedTiles:[]})
+
+    var numberOfSameColor = playerCopy.wallTiles.reduce((accumulator, currentValue, index) => {
+        if (playerCopy.wallRowContainsColor(move.tileDescriptor.tileColor, index)) {
+          return accumulator + 1
+        }
+        else {
+          return accumulator
+        }
+
+    },0)
+
+    if (player.patternRows[rowIndex].length == 0 && numberOfSameColor == 0) {
+        return -10
+    }
+
+    return (1 + numberOfSameColor)*number
   }
 
 }
