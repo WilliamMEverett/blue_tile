@@ -19,6 +19,7 @@ function _getDefaultGameState() {
     gameState.selectedTile = null
     gameState.numberOfDisplays = 5
     gameState.currentRound = 0
+    gameState.forceEnd = false
 
     gameState.deepCopy = function() {
       let newObject = _getDefaultGameState()
@@ -44,6 +45,7 @@ function _getDefaultGameState() {
       this.factoryDisplays.length = 0
       this.centerDisplay.length = 0
       this.players.length = 0
+      this.forceEnd = false
 
       var colors = ['blue','red','green','black','yellow']
       colors.forEach((c) => {
@@ -183,7 +185,15 @@ function _getDefaultGameState() {
     }
 
     gameState.gameIsEnded = function() {
+      if (this.forceEnd) {
+        return true
+      }
+
       var result = false
+      if (this.discardedTiles.length == 0 && this.tileArray.length == 0) {
+        return true
+      }
+
       for (var i=0; i < this.players.length; i++) {
         for (var j =0; j < this.players[i].wallTiles.length; j++) {
           if (this.players[i].wallTiles[j].length >= this.players[i].wallPattern[j].length) {

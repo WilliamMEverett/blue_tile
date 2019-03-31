@@ -29,10 +29,20 @@ function createGameWindow () {
 
   // Emitted when the window is closed.
   win.on('closed', () => {
+
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     win = null
+  })
+
+  win.on('close', (e) => {
+    if (gameS != null && !gameS.gameIsEnded()) {
+      e.preventDefault()
+      showConfirmationModal("Are you sure you want to quit? Your current game is not finished",
+                        {action:"closeWindow"},{acceptText:"Yes"})
+      return
+    }
   })
 }
 
@@ -147,11 +157,23 @@ function renderer_initialized(event, args) {
 }
 
 function newGameMenu() {
-  showGameSetupWindow()
+  if (win != null && gameS != null && !gameS.gameIsEnded()) {
+    showConfirmationModal("Are you sure you want to start a new game? Your current game is not finished",
+                      {action:"newGame"},{acceptText:"Yes"})
+  }
+  else {
+    showGameSetupWindow()
+  }
 }
 
 function quitGameMenu() {
-  app.quit();
+  if (win != null && gameS != null && !gameS.gameIsEnded()) {
+    showConfirmationModal("Are you sure you want to quit? Your current game is not finished",
+                      {action:"quitGame"},{acceptText:"Yes"})
+  }
+  else {
+    app.quit();
+  }
 }
 
 function confirmation_modal_accept(event, args) {
@@ -159,6 +181,22 @@ function confirmation_modal_accept(event, args) {
     if (args.passBackObject.action == "placeTile") {
       confirmPlaceTile(args.passBackObject.player,args.passBackObject.row,args.passBackObject.tileDescriptor)
     }
+    else if (args.passBackObject.action == "newGame") {
+      showGameSetupWindow()
+    }
+    else if (args.passBackObject.action == "quitGame") {
+      if (gameS != null) {
+        gameS.forceEnd = true
+      }
+      setTimeout(()=>{app.quit()}, 0)
+    }
+    else if (args.passBackObject.action == "closeWindow") {
+      if (gameS != null) {
+        gameS.forceEnd = true
+      }
+      setTimeout(()=>{win.close()}, 0)
+    }
+
     confirmationWin.destroy()
     confirmationWin = null
   }
@@ -422,6 +460,9 @@ function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
 }
 
 function prepareForNextPlayer(gameState) {
+    if (win == null) {
+      return
+    }
 
     win.webContents.send('select_player',{index:-1})
     let res = gameState.prepareForNextPlayer()
@@ -437,6 +478,9 @@ function prepareForNextPlayer(gameState) {
 }
 
 function performWallTiling(gameState) {
+    if (win == null) {
+      return
+    }
 
     let nextFirstPlayer = gameState.nextFirstPlayer()
     let messages = gameState.performWallTiling()
