@@ -9,6 +9,7 @@ function init() {
   ipcRenderer.on('select_player', select_player)
   ipcRenderer.on('set_number_factory_displays', set_number_factory_displays)
   ipcRenderer.on('set_number_players', set_number_players)
+  ipcRenderer.on('set_player_description', set_player_description)
   ipcRenderer.on('log_message', log_message)
   ipcRenderer.on('main_message', main_message)
   ipcRenderer.on('temporary_message', temporary_message)
@@ -241,6 +242,18 @@ function set_number_players(event, arg) {
       e.hidden = true
     }
   })
+}
+
+function set_player_description(event, arg) {
+  var playerIndex = arg.index
+  var playerDescription = arg.description
+  var playerNodes = document.getElementById('playerBoards').querySelectorAll('.player_board');
+  if (playerIndex < 0 || playerIndex >= playerNodes.length) {
+    return
+  }
+  var descriptionDiv = playerNodes.item(playerIndex).querySelector('.player_description_panel')
+  descriptionDiv.textContent = playerDescription
+
 }
 
 function log_message(event, arg) {

@@ -149,6 +149,14 @@ html {
   height: 30px;
 }
 
+.player_description_panel {
+  text-align: center;
+  font-size: 10pt;
+  font-family: "tahoma";
+  overflow: hidden;
+  height: 15px;
+}
+
 .player_board {
   outline: dotted blue 1px;
   height: 350px;

@@ -31,6 +31,10 @@ class PlayerAI {
     this.randomness = 0
   }
 
+  getName() {
+    return "Standard"
+  }
+
   moveForGamestate(player,gameState) {
 
     var movesToCheck = this.rankedMoves(this.allPossibleNonDiscardMoves(gameState,player),player,gameState)

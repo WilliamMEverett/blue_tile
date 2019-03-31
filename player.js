@@ -39,6 +39,15 @@ function _getDefaultPlayerObject () {
       return newObject
     }
 
+    newPlayer.getDescription = function() {
+      if (!this.computerPlayer) {
+        return "Human"
+      }
+      else {
+        return `Computer (${this.playerAI.getName()})`
+      }
+    }
+
     newPlayer.wallRowContainsColor = function(color,row) {
       return this.wallTiles[row].reduce((accumulator, currentElement) => {
         if (accumulator == true) {

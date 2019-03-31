@@ -261,6 +261,7 @@ function initialConfigurationOfGameWindow(gameState) {
   gamePlayWindow.webContents.send('configure_tile_displays',{index:"center",tiles:gameState.centerDisplay})
 
   for (var i=0; i< gameState.players.length; i++) {
+    gamePlayWindow.webContents.send('set_player_description', {index:i,description:gameState.players[i].getDescription()})
     gamePlayWindow.webContents.send('configure_player', {index:i,player:gameState.players[i]})
   }
 
