@@ -16,6 +16,7 @@ function init() {
     })
 
     document.getElementById('randomized_player_order').onchange = changeEventHandler
+    document.getElementById('confirm_moves').onchange = changeEventHandler
 }
 
 function configure_game_start_mode(event, args) {
@@ -27,6 +28,9 @@ function setupUI(gameC) {
 
   let randomizedCheckbox = document.getElementById('randomized_player_order')
   randomizedCheckbox.checked = gameC.randomizedPlayerOrder
+
+  let confirmedCheckbox = document.getElementById('confirm_moves')
+  confirmedCheckbox.checked = gameC.confirmMoves
 
   let nl2 = document.querySelectorAll('.player_configure_row')
   nl2.forEach( (e,i) => {
@@ -103,6 +107,12 @@ function setupUI(gameC) {
 function changeEventHandler(event) {
   if (event.currentTarget.id == 'randomized_player_order') {
     gameConfiguration.randomizedPlayerOrder = event.currentTarget.checked
+    setupUI(gameConfiguration)
+    return
+  }
+
+  if (event.currentTarget.id == 'confirm_moves') {
+    gameConfiguration.confirmMoves = event.currentTarget.checked
     setupUI(gameConfiguration)
     return
   }
