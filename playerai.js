@@ -10,7 +10,7 @@ function _getDefaultPlayerAI() {
 }
 
 function _getAllAINames() {
-  return ["standard","random","colors"]
+  return ["standard","random","colors","columns"]
 }
 
 function _getAINamed(name) {
@@ -25,6 +25,9 @@ function _getAINamed(name) {
   }
   else if (name.toLowerCase() == 'colors') {
     return new ColorsPlayerAI()
+  }
+  else if (name.toLowerCase() == 'columns') {
+    return new ColumnsPlayerAI()
   }
   else {
     return null
@@ -201,11 +204,6 @@ class ColorsPlayerAI extends PlayerAI {
 
   rankingFinishRowBonus(rowIndex, player, gameState, move) {
 
-    //must finish up partly completed row so we can clear it out and put other color in
-    if (player.patternRows[rowIndex].length > 0) {
-        return 15 + player.patternRowSize[rowIndex]
-    }
-
     var playerCopy = player.deepCopy()
     playerCopy.performWallTiling({discardedTiles:[]})
 
@@ -219,11 +217,16 @@ class ColorsPlayerAI extends PlayerAI {
 
     },0)
 
-    return 2 + numberOfSameColor*4
+    var result = 2 + numberOfSameColor*4
+    return result
   }
 
   rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move) {
 
+    if (player.totalWallTilesPlaced() === 0 && player.totalPatternRowTiles() === 0) {
+      return super.rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move)
+    }
+
     var playerCopy = player.deepCopy()
     playerCopy.performWallTiling({discardedTiles:[]})
 
@@ -237,11 +240,78 @@ class ColorsPlayerAI extends PlayerAI {
 
     },0)
 
-    if (player.patternRows[rowIndex].length == 0 && numberOfSameColor == 0) {
-        return -10
+    var result = (1 + 2*numberOfSameColor)*number
+      //must finish up partly completed row so we can clear it out and put other color in
+    if (player.patternRows[rowIndex].length > 0) {
+        result += 20 + player.patternRowSize[rowIndex]
+    }
+    return result
+  }
+
+}
+
+
+class ColumnsPlayerAI extends PlayerAI {
+
+  getName() {
+    return "Columns"
+  }
+
+  rankingFinishRowBonus(rowIndex, player, gameState, move) {
+    var playerCopy = player.deepCopy()
+    playerCopy.performWallTiling({discardedTiles:[]})
+
+    var columnIndex = playerCopy.wallPattern[rowIndex].findIndex((e) => {return e == move.tileDescriptor.tileColor})
+    if (columnIndex < 0) {
+      console.log("error in columns ai")
+      return 0
     }
 
-    return (1 + numberOfSameColor)*number
+    var numberOfSameColumn = playerCopy.wallTiles.reduce((accumulator, currentValue, index) => {
+        if (playerCopy.wallRowContainsColor(playerCopy.wallPattern[index][columnIndex], index)) {
+          return accumulator + 1
+        }
+        else {
+          return accumulator
+        }
+
+    },0)
+
+    var result =  2 + numberOfSameColumn*4
+    return result
+  }
+
+  rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move) {
+
+    if (player.totalWallTilesPlaced() === 0 && player.totalPatternRowTiles() === 0) {
+      return super.rankingPlaceTilesInRowBonus(number, rowIndex, player, gameState, move)
+    }
+
+    var playerCopy = player.deepCopy()
+    playerCopy.performWallTiling({discardedTiles:[]})
+
+    var columnIndex = playerCopy.wallPattern[rowIndex].findIndex((e) => {return e == move.tileDescriptor.tileColor})
+    if (columnIndex < 0) {
+      console.log("error in columns ai")
+      return 0
+    }
+
+    var numberOfSameColumn = playerCopy.wallTiles.reduce((accumulator, currentValue, index) => {
+        if (playerCopy.wallRowContainsColor(playerCopy.wallPattern[index][columnIndex], index)) {
+          return accumulator + 1
+        }
+        else {
+          return accumulator
+        }
+
+    },0)
+
+    var result = (1 + 2*numberOfSameColumn)*number
+    //must finish up partly completed row so we can clear it out and put other color in
+    if (player.patternRows[rowIndex].length > 0) {
+        result += 20 + player.patternRowSize[rowIndex]
+    }
+    return result
   }
 
 }

@@ -274,5 +274,17 @@ function _getDefaultPlayerObject () {
       return result
     }
 
+    newPlayer.totalWallTilesPlaced = function() {
+      return this.wallTiles.reduce((accumulator, currentValue) => {
+          return accumulator + currentValue.length
+      },0)
+    }
+
+    newPlayer.totalPatternRowTiles = function() {
+      return this.patternRows.reduce((accumulator, currentValue) => {
+          return accumulator + currentValue.length
+      },0)
+    }
+
     return newPlayer
 }
