@@ -13,6 +13,8 @@ var currentGameSetup
 var gameS
 var confirmationWin
 
+var confirmMoves
+
 function createGameWindow () {
   // Create the browser window.
   gamePlayWindow = new BrowserWindow({ width: 1200, height: 800 })
@@ -97,6 +99,8 @@ app.on('ready', () => {
     currentGameSetup.randomizedPlayerOrder = true
     currentGameSetup.confirmMoves = true
 
+    confirmMoves = true
+
     const menuTemplate = [
       {
         label: 'Blue Tile',
@@ -142,6 +146,8 @@ app.on('activate', () => {
 
 function game_start_confirm(event, args) {
     currentGameSetup = args.gameConfiguration
+    confirmMoves = currentGameSetup.confirmMoves
+
     gameS = GameState.getDefaultGameState()
     gameS.initializeBoard(currentGameSetup)
 
@@ -417,7 +423,7 @@ function pattern_row_clicked(event, args) {
       }
     }
 
-    if (gameS.confirmMoves){
+    if (confirmMoves) {
       var message = `Player ${gameS.currentPlayerIndex + 1}, do you want to place ${tileNumber} ` +
       `${tileColor} tile${tileNumber > 1 ? 's' : ''} from ${sourceDisplay} into ${destinationRow}?${discardWarning}`
 
