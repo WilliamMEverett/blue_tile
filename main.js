@@ -95,6 +95,7 @@ app.on('ready', () => {
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
     currentGameSetup.players.push({type:'computer',aiType:currentGameSetup.aiChoices[0]})
     currentGameSetup.randomizedPlayerOrder = true
+    currentGameSetup.confirmMoves = true
 
     const menuTemplate = [
       {
@@ -416,17 +417,21 @@ function pattern_row_clicked(event, args) {
       }
     }
 
-    var message = `Player ${gameS.currentPlayerIndex + 1}, do you want to place ${tileNumber} ` +
-    `${tileColor} tile${tileNumber > 1 ? 's' : ''} from ${sourceDisplay} into ${destinationRow}?${discardWarning}`
+    if (gameS.confirmMoves){
+      var message = `Player ${gameS.currentPlayerIndex + 1}, do you want to place ${tileNumber} ` +
+      `${tileColor} tile${tileNumber > 1 ? 's' : ''} from ${sourceDisplay} into ${destinationRow}?${discardWarning}`
 
-    if (gameS.selectedTile.displayIndex == "center" && (gameS.centerDisplay.findIndex((e) => e.first === true) >= 0)) {
+      if (gameS.selectedTile.displayIndex == "center" && (gameS.centerDisplay.findIndex((e) => e.first === true) >= 0)) {
       message += " You will also take the first player tile, which will be placed in the discard line."
+      }
+
+      gamePlayWindow.webContents.send('highlight_pattern_rows',{player:gameS.currentPlayerIndex,rows:[args.row]})
+
+      showConfirmationModal(message,
+        {player:gameS.currentPlayerIndex,action:"placeTile",row:args.row,tileDescriptor:gameS.selectedTile},{acceptText:"Yes"})
+    } else {
+      confirmPlaceTile(gameS.currentPlayerIndex, args.row, gameS.selectedTile)
     }
-
-    gamePlayWindow.webContents.send('highlight_pattern_rows',{player:gameS.currentPlayerIndex,rows:[args.row]})
-
-    showConfirmationModal(message,
-      {player:gameS.currentPlayerIndex,action:"placeTile",row:args.row,tileDescriptor:gameS.selectedTile},{acceptText:"Yes"})
 }
 
 function placeSelectedTileInRow(gameState, row, selectedTileDescriptor) {
